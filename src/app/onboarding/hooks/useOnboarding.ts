@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { UserProfile, NutritionResults } from "../types";
-import { STEPS } from "../steps";
+import { STEPS } from "../config";
 import { calculateNutrition } from "../utils/calculateNutrition";
 
 /**

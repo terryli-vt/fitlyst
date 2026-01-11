@@ -37,3 +37,19 @@ kbd,
 samp {
   font-family: var(--font-geist-mono), monospace;
 }
+
+/* Ensure input fields have explicit text colors to prevent platform-specific rendering issues */
+input,
+textarea,
+select {
+  color: #000000;
+  -webkit-text-fill-color: #000000;
+}
+
+/* Placeholder text should remain grey */
+input::placeholder,
+textarea::placeholder {
+  color: #9ca3af; /* gray-400 */
+  -webkit-text-fill-color: #9ca3af;
+  opacity: 1; /* Required for Firefox */
+}

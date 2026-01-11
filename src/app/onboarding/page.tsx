@@ -14,7 +14,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useOnboarding } from "./hooks/useOnboarding";
-import { STEPS, ACTIVITY_LEVELS } from "./steps";
+import { STEPS, ACTIVITY_LEVELS } from "./config";
 import { ProgressBar } from "./components/ProgressBar";
 import { ResultsView } from "./components/ResultsView";
 import { HeightInput } from "./components/HeightInput";

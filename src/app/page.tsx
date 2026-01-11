@@ -26,7 +26,7 @@ export default function Home() {
           </div>
 
           {/* Tagline - Clear value proposition */}
-          <h2 className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl text-balance">
+          <h2 className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl text-balance text-black">
             Your Personal AI Nutrition & Fitness Companion
           </h2>
 
