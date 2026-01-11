@@ -6,21 +6,17 @@
  * so we don't need 'use client' directive.
  */
 
+import Link from "next/link";
 import { Sparkles, Github, Mail } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
-      {/* 
-        Hero Section
-        Purpose: First impression - immediately communicates value proposition
-        Design: Centered content with generous spacing, prominent CTA
-        Color: Deep teal-700 for primary brand color (trust, health, nature)
-      */}
+      {/* Hero Section */}
       <header className="bg-gradient-to-b from-teal-50 to-white pt-12 pb-20 px-4 sm:pt-16 sm:pb-32">
         <div className="max-w-4xl mx-auto text-center">
           {/* App Name - Large, bold, brand color */}
-          <h1 className="text-5xl sm:text-6xl md:text-6xl font-bold text-teal-700 mb-6 tracking-tight">
+          <h1 className="text-5xl sm:text-6xl font-bold text-teal-700 mb-6 tracking-tight">
             Fitlyst
           </h1>
 
@@ -30,30 +26,28 @@ export default function Home() {
           </div>
 
           {/* Tagline - Clear value proposition */}
-          <h1 className="mb-6 font-sans text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl lg:text-7xl text-balance">
+          <h2 className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl text-balance">
             Your Personal AI Nutrition & Fitness Companion
-          </h1>
+          </h2>
 
           {/* Sub-tagline - Additional context for beginners */}
-          <p className="mb-10 text-lg text-gray-600 text-muted-foreground md:text-xl leading-relaxed text-pretty max-w-2xl mx-auto">
+          <p className="mb-10 text-lg text-gray-600 md:text-xl leading-relaxed max-w-2xl mx-auto">
             Transform your health journey with intelligent meal planning
             tailored to your unique metrics and goals. Evidence-based nutrition
             made effortless.
           </p>
 
           {/* CTA Button - Primary action, uses accent color (orange) for energy */}
-          <button className="bg-orange-400 hover:bg-orange-500 text-white font-semibold py-4 px-8 rounded-full text-lg transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+          <Link
+            href="/onboarding"
+            className="inline-block bg-orange-400 hover:bg-orange-500 text-white font-semibold py-4 px-8 rounded-full text-lg transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
             Get Started
-          </button>
+          </Link>
         </div>
       </header>
 
-      {/* 
-        Features Section
-        Purpose: Build trust by explaining key benefits
-        Design: Three-column grid on desktop, stacked on mobile
-        Spacing: Generous padding for breathing room
-      */}
+      {/* Features Section */}
       <main className="flex-1 py-20 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           {/* Section Header */}
@@ -119,12 +113,7 @@ export default function Home() {
         </div>
       </main>
 
-      {/* 
-        Footer Section
-        Purpose: Legal protection and transparency
-        Design: Minimal, centered, subtle background
-        Important: Disclaimer text for health/fitness apps
-      */}
+      {/* Footer Section */}
       <footer className="bg-gray-50 border-t border-gray-200 py-8 px-4">
         <div className="max-w-4xl mx-auto text-center">
           {/* Disclaimer Text

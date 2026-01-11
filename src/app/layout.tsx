@@ -14,21 +14,26 @@ const geistMono = Geist_Mono({
 
 /**
  * Metadata Configuration (define SEO-related information)
- * 
+ *
  * This metadata object defines the page title and description that appear in:
  * - Browser tab title
  * - Search engine results (SEO)
  * - Social media previews (when shared on platforms like Twitter, Facebook, etc.)
  * - Browser bookmarks
- * 
+ *
  * The title should be concise and include your brand name.
  * The description should be compelling and include relevant keywords for SEO.
  */
 export const metadata: Metadata = {
   title: "Fitlyst - AI-Powered Nutrition and Fitness Companion",
-  description: "Your personalized AI-powered nutrition and fitness companion. Get custom calorie plans, meal suggestions, and beginner-friendly guidance.",
+  description:
+    "Your personalized AI-powered nutrition and fitness companion. Get custom calorie plans, meal suggestions, and beginner-friendly guidance.",
 };
 
+/* Root Layout Component
+Purpose: Provides a consistent layout structure for all pages
+Wraps all pages in a consistent layout
+*/
 export default function RootLayout({
   children,
 }: Readonly<{
