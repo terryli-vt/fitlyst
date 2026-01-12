@@ -1,3 +1,5 @@
+// useOnboarding centralizes onboarding state and handlers, making the component cleaner and the logic reusable.
+// If you use useState in a component, then the state is local to that component and not reusable.
 "use client";
 
 import { useState } from "react";
@@ -7,6 +9,7 @@ import { calculateNutrition } from "../utils/calculateNutrition";
 
 /**
  * Custom hook for onboarding flow state management
+ * Hooks let you hook into React features from function components.
  *
  * Manages all state and handlers for the multi-step onboarding questionnaire.
  * Future: Could be extended to handle loading/saving from API when authentication is added.
@@ -16,6 +19,7 @@ export function useOnboarding() {
   const [showResults, setShowResults] = useState(false);
 
   // User profile state - structured for future persistence
+  // <UserProfile> is a TypeScript generic type, meaning the profile state must follow the structure defined by the UserProfile interface or type.
   // Future: This could be initialized from saved user data if authenticated
   const [profile, setProfile] = useState<UserProfile>({
     height: { value: "", unit: "cm" },
@@ -30,9 +34,7 @@ export function useOnboarding() {
 
   // Calculate progress percentage
   // Formula: (current step + 1) / total steps * 100
-  const progress = showResults
-    ? 100
-    : ((currentStep + 1) / STEPS.length) * 100;
+  const progress = showResults ? 100 : ((currentStep + 1) / STEPS.length) * 100;
 
   /**
    * Handle answer input changes
@@ -73,28 +75,48 @@ export function useOnboarding() {
 
     if (step.type === "height") {
       if (heightUnit === "cm") {
+        const heightValue = parseFloat(profile.height.value);
         return (
-          profile.height.value !== "" && parseFloat(profile.height.value) > 0
+          profile.height.value !== "" && heightValue > 0 && heightValue <= 300 // Maximum height: 300 cm
         );
       } else {
         // For imperial, need both feet and inches
+        const feet = parseFloat(profile.height.value) || 0;
+        const inches = parseFloat(profile.height.inches || "0") || 0;
+        // Convert to cm for validation: 300 cm = 9 feet 10.11 inches
+        // We'll allow up to 9 feet 10 inches (9'10")
+        const totalInches = feet * 12 + inches;
+        const maxInches = 300 / 2.54; // ~118.11 inches
         return (
           profile.height.value !== "" &&
           profile.height.inches !== "" &&
-          parseFloat(profile.height.value) > 0 &&
-          parseFloat(profile.height.inches || "0") >= 0
+          feet > 0 &&
+          inches >= 0 &&
+          totalInches <= maxInches
         );
       }
     }
 
     if (step.type === "weight") {
-      return (
-        profile.weight.value !== "" && parseFloat(profile.weight.value) > 0
-      );
+      const weightValue = parseFloat(profile.weight.value);
+      if (weightUnit === "kg") {
+        return (
+          profile.weight.value !== "" && weightValue > 0 && weightValue <= 500 // Maximum weight: 500 kg
+        );
+      } else {
+        // For lb: 500 kg = 1102.31 lb
+        const maxLb = 500 * 2.20462; // ~1102.31 lb
+        return (
+          profile.weight.value !== "" && weightValue > 0 && weightValue <= maxLb
+        );
+      }
     }
 
     if (step.type === "number") {
-      return profile.age !== "" && parseFloat(profile.age) > 0;
+      const ageValue = parseFloat(profile.age);
+      return (
+        profile.age !== "" && ageValue > 0 && ageValue <= 120 // Maximum age: 120
+      );
     }
 
     if (step.type === "select") {
