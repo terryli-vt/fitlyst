@@ -23,6 +23,26 @@ export function ResultsView({ results }: ResultsViewProps) {
       {/* Results Display */}
       <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-8 border border-teal-100">
         <div className="space-y-6">
+          {/* BMI and BMR */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-xs text-gray-600 mb-1">BMI</div>
+              <div className="text-2xl font-bold text-teal-700">
+                {results.bmi}
+              </div>
+              <div className="text-xs text-gray-500">Body Mass Index</div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-xs text-gray-600 mb-1">BMR</div>
+              <div className="text-2xl font-bold text-teal-700">
+                {results.bmr}
+              </div>
+              <div className="text-xs text-gray-500">
+                kcal/day (Basal Metabolic Rate)
+              </div>
+            </div>
+          </div>
+
           {/* Calories */}
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="text-sm text-gray-600 mb-1">Daily Calories</div>

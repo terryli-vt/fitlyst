@@ -25,6 +25,7 @@ export function useOnboarding() {
     height: { value: "", unit: "cm" },
     weight: { value: "", unit: "kg" },
     age: "",
+    gender: "",
     activityLevel: "",
   });
 
@@ -117,6 +118,10 @@ export function useOnboarding() {
       return (
         profile.age !== "" && ageValue > 0 && ageValue <= 120 // Maximum age: 120
       );
+    }
+
+    if (step.type === "gender") {
+      return profile.gender !== "";
     }
 
     if (step.type === "select") {

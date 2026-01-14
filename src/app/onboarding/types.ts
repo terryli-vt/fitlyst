@@ -15,7 +15,14 @@ export interface UserProfile {
     unit: "kg" | "lb";
   };
   age: string;
-  activityLevel: "low" | "medium" | "high" | "";
+  gender: "male" | "female" | "";
+  activityLevel:
+    | "sedentary"
+    | "light"
+    | "moderate"
+    | "active"
+    | "very_active"
+    | "";
 }
 
 /**
@@ -28,4 +35,6 @@ export interface NutritionResults {
   protein: number;
   carbs: number;
   fat: number;
+  bmi: number;
+  bmr: number;
 }

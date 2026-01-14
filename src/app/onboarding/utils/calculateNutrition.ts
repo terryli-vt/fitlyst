@@ -32,23 +32,39 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
 
   const age = parseFloat(profile.age) || 0;
 
-  // Simplified BMR calculation (Mifflin-St Jeor Equation)
-  // For MVP, using a simplified version
-  // Future: Use more accurate formula or AI-based calculation
-  const bmr = 10 * weightInKg + 6.25 * heightInCm - 5 * age + 5;
+  // Calculate BMI (Body Mass Index)
+  // BMI = weight (kg) / height (m)^2
+  const heightInM = heightInCm / 100;
+  const bmi = weightInKg / (heightInM * heightInM);
 
-  // Activity multipliers
-  const activityMultipliers = {
-    low: 1.2,
-    medium: 1.55,
-    high: 1.725,
+  // BMR calculation using Mifflin-St Jeor Equation
+  // Men: BMR = 10 × weight(kg) + 6.25 × height(cm) - 5 × age(years) + 5
+  // Women: BMR = 10 × weight(kg) + 6.25 × height(cm) - 5 × age(years) - 161
+  const baseBmr = 10 * weightInKg + 6.25 * heightInCm - 5 * age;
+  const bmr = profile.gender === "female" ? baseBmr - 161 : baseBmr + 5;
+
+  // TDEE (Total Daily Energy Expenditure) calculation
+  // TDEE = BMR × Activity Multiplier
+  // Activity multipliers based on activity level:
+  // - Sedentary: 1.2
+  // - Training 1–3 days/week: 1.375
+  // - Training 3–5 days/week: 1.55
+  // - Training 6–7 days/week: 1.725
+  // - Very physical job / athlete: 1.9
+  const activityMultipliers: Record<string, number> = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9,
   };
 
+  // Default to sedentary (1.2) if activity level is invalid or empty
+  // This is a safety fallback, though validation should prevent this in normal flow
   const multiplier =
-    activityMultipliers[
-      profile.activityLevel as keyof typeof activityMultipliers
-    ] || 1.2;
-  const dailyCalories = Math.round(bmr * multiplier);
+    activityMultipliers[profile.activityLevel] || activityMultipliers.sedentary;
+  const tdee = bmr * multiplier;
+  const dailyCalories = Math.round(tdee);
 
   // Macro distribution (simplified for MVP)
   // Future: Make this personalized based on goals, preferences, etc.
@@ -61,5 +77,7 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
     protein: proteinGrams,
     carbs: carbsGrams,
     fat: fatGrams,
+    bmi: Math.round(bmi * 10) / 10, // Round to 1 decimal place
+    bmr: Math.round(bmr), // Round to nearest whole number
   };
 }

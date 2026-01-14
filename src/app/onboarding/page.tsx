@@ -14,7 +14,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useOnboarding } from "./hooks/useOnboarding";
-import { STEPS, ACTIVITY_LEVELS } from "./config";
+import { STEPS, ACTIVITY_LEVELS, GENDER_OPTIONS } from "./config";
 import { ProgressBar } from "./components/ProgressBar";
 import { ResultsView } from "./components/ResultsView";
 import { HeightInput } from "./components/HeightInput";
@@ -28,7 +28,6 @@ export default function OnboardingPage() {
     profile,
     heightUnit,
     weightUnit,
-    progress,
     results,
     handleAnswerChange,
     handleHeightUnitChange,
@@ -84,6 +83,25 @@ export default function OnboardingPage() {
               min="1"
               max="120"
             />
+          </div>
+        )}
+
+        {step.type === "gender" && (
+          <div className="space-y-3">
+            {GENDER_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleAnswerChange("gender", option.value)}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
+                  profile.gender === option.value
+                    ? "border-teal-500 bg-teal-50 text-teal-700"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         )}
 
