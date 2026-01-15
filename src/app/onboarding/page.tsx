@@ -14,7 +14,13 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useOnboarding } from "./hooks/useOnboarding";
-import { STEPS, ACTIVITY_LEVELS, GENDER_OPTIONS } from "./config";
+import {
+  STEPS,
+  ACTIVITY_LEVELS,
+  GENDER_OPTIONS,
+  GOAL_OPTIONS,
+  GOAL_PRIORITY_OPTIONS,
+} from "./config";
 import { ProgressBar } from "./components/ProgressBar";
 import { ResultsView } from "./components/ResultsView";
 import { HeightInput } from "./components/HeightInput";
@@ -119,6 +125,50 @@ export default function OnboardingPage() {
                 }`}
               >
                 {level.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step.type === "goal" && (
+          <div className="space-y-3">
+            {GOAL_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleAnswerChange("goal", option.value)}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
+                  profile.goal === option.value
+                    ? "border-teal-500 bg-teal-50 text-teal-700"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                }`}
+              >
+                <div className="font-medium">{option.label}</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {option.description}
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {step.type === "goalPriority" && (
+          <div className="space-y-3">
+            {GOAL_PRIORITY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => handleAnswerChange("goalPriority", option.value)}
+                className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
+                  profile.goalPriority === option.value
+                    ? "border-teal-500 bg-teal-50 text-teal-700"
+                    : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                }`}
+              >
+                <div className="font-medium">{option.label}</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {option.description}
+                </div>
               </button>
             ))}
           </div>

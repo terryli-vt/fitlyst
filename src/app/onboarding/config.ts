@@ -30,6 +30,18 @@ export const STEPS = [
     key: "activityLevel",
     type: "select",
   },
+  {
+    id: 5,
+    question: "What's your fitness goal?",
+    key: "goal",
+    type: "goal",
+  },
+  {
+    id: 6,
+    question: "How do you want to achieve your goal?",
+    key: "goalPriority",
+    type: "goalPriority",
+  },
 ] as const;
 
 // Gender options
@@ -48,5 +60,39 @@ export const ACTIVITY_LEVELS = [
     value: "very_active",
     label: "Very physical job / athlete",
     multiplier: 1.9,
+  },
+] as const;
+
+// Goal options
+export const GOAL_OPTIONS = [
+  {
+    value: "bulk",
+    label: "Bulk (Muscle Gain)",
+    description: "Increase muscle mass and strength",
+  },
+  {
+    value: "cut",
+    label: "Cut (Fat Loss)",
+    description: "Reduce body fat while maintaining muscle",
+  },
+] as const;
+
+// Goal priority options
+export const GOAL_PRIORITY_OPTIONS = [
+  {
+    value: "aggressive",
+    label: "Aggressive",
+    description:
+      "Upper end of calorie range - faster progress (may gain more fat when bulking)",
+  },
+  {
+    value: "balanced",
+    label: "Balanced",
+    description: "Middle of calorie range - balanced approach",
+  },
+  {
+    value: "conservative",
+    label: "Conservative",
+    description: "Lower end of calorie range - slower but leaner progress",
   },
 ] as const;

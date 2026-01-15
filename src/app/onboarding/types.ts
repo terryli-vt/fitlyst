@@ -23,6 +23,8 @@ export interface UserProfile {
     | "active"
     | "very_active"
     | "";
+  goal: "bulk" | "cut" | "";
+  goalPriority: "aggressive" | "balanced" | "conservative" | "";
 }
 
 /**

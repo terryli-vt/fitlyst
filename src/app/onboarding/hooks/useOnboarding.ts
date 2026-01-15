@@ -27,6 +27,8 @@ export function useOnboarding() {
     age: "",
     gender: "",
     activityLevel: "",
+    goal: "",
+    goalPriority: "",
   });
 
   // Unit preferences for height and weight
@@ -126,6 +128,14 @@ export function useOnboarding() {
 
     if (step.type === "select") {
       return profile.activityLevel !== "";
+    }
+
+    if (step.type === "goal") {
+      return profile.goal !== "";
+    }
+
+    if (step.type === "goalPriority") {
+      return profile.goalPriority !== "";
     }
 
     return false;

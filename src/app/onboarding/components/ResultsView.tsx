@@ -79,6 +79,46 @@ export function ResultsView({ results }: ResultsViewProps) {
         </div>
       </div>
 
+      {/* Adjustment Tips */}
+      <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
+        <h3 className="text-lg font-semibold text-blue-900 mb-4">
+          💡 Adjustment Tips
+        </h3>
+        <ul className="space-y-3 text-left text-gray-700">
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2">•</span>
+            <span>
+              <strong>Recalculate every 2–3 weeks</strong> to adjust your plan
+              based on progress
+            </span>
+          </li>
+
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2">•</span>
+            <span>
+              <strong>Bulking:</strong> Aim to gain{" "}
+              <strong>0.25–0.5 kg/week</strong> (0.55–1.1 lb/week)
+            </span>
+          </li>
+
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2">•</span>
+            <span>
+              <strong>Cutting:</strong> Aim to lose{" "}
+              <strong>0.3–0.7 kg/week</strong> (0.66–1.54 lb/week)
+            </span>
+          </li>
+
+          <li className="flex items-start">
+            <span className="text-blue-600 mr-2">•</span>
+            <span>
+              <strong>Slightly higher carbs on training days</strong> to support
+              performance and recovery
+            </span>
+          </li>
+        </ul>
+      </div>
+
       {/* Future: Add "Save Profile" button here when authentication is implemented */}
       {/* Future: Add "Share Results" or "Export Plan" options */}
     </div>
