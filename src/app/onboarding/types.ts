@@ -40,3 +40,20 @@ export interface NutritionResults {
   bmi: number;
   bmr: number;
 }
+
+/**
+ * Meal Idea Type
+ * Represents a single meal suggestion with its macros and cooking instructions
+ */
+export interface MealIdea {
+  mealType: "breakfast" | "lunch" | "dinner";
+  name: string;
+  description: string;
+  macros: {
+    calories: number;
+    protein: number; // in grams
+    carbs: number; // in grams
+    fat: number; // in grams
+  };
+  cookingInstructions?: string[]; // Array of cooking steps
+}
