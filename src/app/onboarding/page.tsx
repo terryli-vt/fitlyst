@@ -11,6 +11,7 @@
  * - Calculation service: Move calculation logic to separate service/API endpoint
  */
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useOnboarding } from "./hooks/useOnboarding";
@@ -25,6 +26,9 @@ import { ProgressBar } from "./components/ProgressBar";
 import { ResultsView } from "./components/ResultsView";
 import { HeightInput } from "./components/HeightInput";
 import { WeightInput } from "./components/WeightInput";
+import { MealIdeasLoading } from "./components/MealIdeasLoading";
+import { MealIdeasView } from "./components/MealIdeasView";
+import type { MealIdea } from "./types";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -42,15 +46,40 @@ export default function OnboardingPage() {
     handlePrevious,
     validateCurrentStep,
   } = useOnboarding();
+  
+  const [isGeneratingMealIdeas, setIsGeneratingMealIdeas] = useState(false);
+  const [mealIdeas, setMealIdeas] = useState<MealIdea[] | null>(null);
+  const [showMealIdeas, setShowMealIdeas] = useState(false);
 
   const step = STEPS[currentStep];
+
+  /**
+   * Handle meal ideas generation
+   */
+  const handleMealIdeasGenerated = (ideas: MealIdea[]) => {
+    setMealIdeas(ideas);
+    setShowMealIdeas(true);
+  };
+
+  /**
+   * Handle back from meal ideas view
+   */
+  const handleBackFromMealIdeas = () => {
+    setShowMealIdeas(false);
+  };
 
   /**
    * Render current step's question content
    */
   const renderStepContent = () => {
     if (showResults && results) {
-      return <ResultsView results={results} />;
+      return (
+        <ResultsView
+          results={results}
+          onLoadingChange={setIsGeneratingMealIdeas}
+          onMealIdeasGenerated={handleMealIdeasGenerated}
+        />
+      );
     }
 
     return (
@@ -176,6 +205,16 @@ export default function OnboardingPage() {
       </div>
     );
   };
+
+  // Show loading page when generating meal ideas
+  if (isGeneratingMealIdeas) {
+    return <MealIdeasLoading />;
+  }
+
+  // Show meal ideas view when meal ideas are available
+  if (showMealIdeas && mealIdeas && mealIdeas.length > 0) {
+    return <MealIdeasView mealIdeas={mealIdeas} onBack={handleBackFromMealIdeas} />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex flex-col">

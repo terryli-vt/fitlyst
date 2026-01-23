@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import type { NutritionResults, MealIdea } from "../types";
 
 interface ResultsViewProps {
   results: NutritionResults;
+  onLoadingChange?: (isLoading: boolean) => void;
+  onMealIdeasGenerated?: (mealIdeas: MealIdea[]) => void;
 }
 
 /**
@@ -18,11 +19,15 @@ interface ResultsViewProps {
  * - Displays meal suggestions with macro breakdown
  * - Loading and error states
  */
-export function ResultsView({ results }: ResultsViewProps) {
-  const [mealIdeas, setMealIdeas] = useState<MealIdea[] | null>(null);
+export function ResultsView({ results, onLoadingChange, onMealIdeasGenerated }: ResultsViewProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedMealIndex, setExpandedMealIndex] = useState<number | null>(null);
+
+  // Notify parent when loading state changes
+  const updateLoadingState = (loading: boolean) => {
+    setIsLoading(loading);
+    onLoadingChange?.(loading);
+  };
 
   /**
    * Handle Generate Meal Ideas button click
@@ -35,14 +40,14 @@ export function ResultsView({ results }: ResultsViewProps) {
    * 5. Client displays meal ideas below the button
    */
   const handleGenerateMealIdeas = async () => {
-    setIsLoading(true);
+    updateLoadingState(true);
     setError(null);
-    // Only clear meal ideas if we're generating new ones
-    // This ensures meal ideas persist until regenerated
-    setExpandedMealIndex(null);
 
     try {
-      const response = await fetch("/api/generate-meal-ideas", {
+      // Wait 5 seconds before setting dummy data (to simulate loading)
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      /* const response = await fetch("/api/generate-meal-ideas", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,13 +60,108 @@ export function ResultsView({ results }: ResultsViewProps) {
         throw new Error(errorData.error || "Failed to generate meal ideas");
       }
 
-      const data = await response.json();
-      setMealIdeas(data.mealIdeas);
+      const data = await response.json(); */
+      
+      // dummy data for testing
+      const dummyData = {
+        "mealIdeas": [
+            {
+                "mealType": "breakfast",
+                "name": "Oatmeal with Banana and Peanut Butter",
+                "description": "Creamy oatmeal topped with sliced banana and a scoop of peanut butter.",
+                "macros": {
+                    "calories": 500,
+                    "protein": 15,
+                    "carbs": 70,
+                    "fat": 20
+                },
+                "cookingInstructions": [
+                    "Step 1: Cook 1 cup of rolled oats in 2 cups of water or milk until soft.",
+                    "Step 2: Slice 1 banana and stir it into the oatmeal.",
+                    "Step 3: Add 2 tablespoons of peanut butter and mix well.",
+                    "Step 4: Serve warm."
+                ]
+            },
+            {
+                "mealType": "lunch",
+                "name": "Grilled Chicken Salad",
+                "description": "A fresh salad with grilled chicken, mixed greens, and a light vinaigrette.",
+                "macros": {
+                    "calories": 600,
+                    "protein": 50,
+                    "carbs": 30,
+                    "fat": 25
+                },
+                "cookingInstructions": [
+                    "Step 1: Grill 6 oz of chicken breast until fully cooked.",
+                    "Step 2: Chop mixed greens (like spinach and romaine) and place in a bowl.",
+                    "Step 3: Slice the grilled chicken and add it to the salad.",
+                    "Step 4: Drizzle with a light vinaigrette and toss to combine."
+                ]
+            },
+            {
+                "mealType": "dinner",
+                "name": "Quinoa with Black Beans and Veggies",
+                "description": "Nutritious quinoa served with black beans and sautéed vegetables.",
+                "macros": {
+                    "calories": 700,
+                    "protein": 25,
+                    "carbs": 100,
+                    "fat": 15
+                },
+                "cookingInstructions": [
+                    "Step 1: Cook 1 cup of quinoa according to package instructions.",
+                    "Step 2: Rinse and drain 1 can of black beans.",
+                    "Step 3: Sauté chopped bell peppers, onions, and zucchini in a pan until tender.",
+                    "Step 4: Combine quinoa, black beans, and sautéed veggies in a bowl and mix well."
+                ]
+            },
+            {
+                "mealType": "snack",
+                "name": "Greek Yogurt with Berries and Honey",
+                "description": "Creamy Greek yogurt topped with fresh berries and a drizzle of honey.",
+                "macros": {
+                    "calories": 300,
+                    "protein": 20,
+                    "carbs": 40,
+                    "fat": 5
+                },
+                "cookingInstructions": [
+                    "Step 1: Scoop 1 cup of Greek yogurt into a bowl.",
+                    "Step 2: Add a handful of mixed berries on top.",
+                    "Step 3: Drizzle with 1 tablespoon of honey and serve."
+                ]
+            },
+            {
+                "mealType": "dinner",
+                "name": "Stir-Fried Tofu with Broccoli and Rice",
+                "description": "Flavorful stir-fried tofu with broccoli served over rice.",
+                "macros": {
+                    "calories": 600,
+                    "protein": 30,
+                    "carbs": 80,
+                    "fat": 20
+                },
+                "cookingInstructions": [
+                    "Step 1: Cook 1 cup of rice according to package instructions.",
+                    "Step 2: Cube 8 oz of firm tofu and sauté in a pan until golden.",
+                    "Step 3: Add broccoli florets and stir-fry until tender.",
+                    "Step 4: Serve stir-fried tofu and broccoli over rice."
+                ]
+            }
+        ]
+    }
+
+      
+
+      // setMealIdeas(data.mealIdeas);
+      const mealIdeasData = dummyData.mealIdeas as MealIdea[];
+      onMealIdeasGenerated?.(mealIdeasData);
     } catch (err: any) {
       setError(err.message || "An error occurred. Please try again.");
       console.error("Error generating meal ideas:", err);
     } finally {
-      setIsLoading(false);
+      updateLoadingState(false);
     }
   };
 
@@ -194,81 +294,6 @@ export function ResultsView({ results }: ResultsViewProps) {
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
             <p className="font-medium">Error</p>
             <p className="text-sm">{error}</p>
-          </div>
-        )}
-
-        {/* Meal Ideas Display */}
-        {mealIdeas && mealIdeas.length > 0 && (
-          <div className="mt-6 space-y-6">
-            <h3 className="text-2xl font-bold text-teal-700">
-              Your Meal Ideas
-            </h3>
-            
-            <div className="grid gap-5 grid-cols-1">
-              {mealIdeas.map((meal, index) => (
-                <div
-                  key={index}
-                  className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-left"
-                >
-                  {/* Meal Type Badge */}
-                  <div className="mb-3">
-                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-teal-100 text-teal-700 capitalize">
-                      {meal.mealType}
-                    </span>
-                  </div>
-
-                  {/* Meal Name */}
-                  <h4 className="text-xl font-bold text-gray-900 mb-2">
-                    {meal.name}
-                  </h4>
-
-                  {/* Meal Description */}
-                  {meal.description && (
-                    <p className="text-gray-600 text-sm mb-4">
-                      {meal.description}
-                    </p>
-                  )}
-
-                  {/* Macro Breakdown */}
-                  <div className="pt-4 border-t border-gray-100">
-                    <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                      Macros
-                    </p>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span className="text-gray-600">Calories:</span>
-                        <span className="ml-2 font-semibold text-gray-900">
-                          {meal.macros.calories} kcal
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Protein:</span>
-                        <span className="ml-2 font-semibold text-gray-900">
-                          {meal.macros.protein} g
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Carbs:</span>
-                        <span className="ml-2 font-semibold text-gray-900">
-                          {meal.macros.carbs} g
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-gray-600">Fat:</span>
-                        <span className="ml-2 font-semibold text-gray-900">
-                          {meal.macros.fat} g
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Disclaimer */}
-            <p className="text-xs text-gray-500 italic mt-4">
-              Meal ideas are AI-generated and not medical advice.
-            </p>
           </div>
         )}
       </div>
