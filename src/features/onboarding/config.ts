@@ -28,7 +28,9 @@ export const STEPS = [
     id: 4,
     question: "What's your activity level?",
     key: "activityLevel",
-    type: "select",
+    // Renamed from "select" to "activity" to be descriptive and avoid confusion
+    // if other select-style steps are added in the future.
+    type: "activity",
   },
   {
     id: 5,

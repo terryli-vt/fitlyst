@@ -1,4 +1,6 @@
-// useOnboarding centralizes onboarding state and handlers, making the component cleaner and the logic reusable.
+// useOnboarding is a custom React hook that manages the state and logic for the onboarding flow
+// It centralizes all the state related to the user's profile, the current step of the questionnaire, and the results calculation.
+// By using this hook in the onboarding page component, we can keep the component clean and focused on rendering, while all the logic is handled in this reusable hook. This also allows us to easily extend or modify the onboarding logic in the future without having to change the component code.
 // If you use useState in a component, then the state is local to that component and not reusable.
 "use client";
 
@@ -35,17 +37,13 @@ export function useOnboarding() {
   const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
 
-  // Calculate progress percentage
-  // Formula: (current step + 1) / total steps * 100
-  const progress = showResults ? 100 : ((currentStep + 1) / STEPS.length) * 100;
-
   /**
    * Handle answer input changes
    * Updates the profile state with the new answer
    */
   const handleAnswerChange = (
     key: keyof UserProfile,
-    value: string | { value: string; unit: string; inches?: string }
+    value: string | { value: string; unit: string; inches?: string },
   ) => {
     setProfile((prev) => ({
       ...prev,
@@ -126,7 +124,8 @@ export function useOnboarding() {
       return profile.gender !== "";
     }
 
-    if (step.type === "select") {
+    // "activity" was previously called "select" — renamed to be descriptive
+    if (step.type === "activity") {
       return profile.activityLevel !== "";
     }
 
@@ -188,7 +187,6 @@ export function useOnboarding() {
     profile,
     heightUnit,
     weightUnit,
-    progress,
     results,
 
     // Handlers

@@ -2,12 +2,6 @@ import type { UserProfile, NutritionResults } from "../types";
 
 /**
  * Calculate nutrition recommendations
- *
- * This is a simplified calculation for MVP.
- * Future: Replace with AI-powered calculation or API call
- * Future: This could be moved to a separate service/utility file
- *
- * Uses basic BMR (Basal Metabolic Rate) calculation with activity multiplier
  */
 export function calculateNutrition(profile: UserProfile): NutritionResults {
   // Convert all values to metric for calculation

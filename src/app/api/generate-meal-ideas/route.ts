@@ -16,15 +16,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import OpenAI from "openai";
-import type { NutritionResults, MealIdea } from "@/app/onboarding/types";
-
-// Initialize OpenAI client
-// The API key should be set in environment variable OPENAI_API_KEY
-// For local development, create a .env.local file with: OPENAI_API_KEY=your_key_here
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { openai } from "@/lib/openai";
+import type { NutritionResults, MealIdea } from "@/features/onboarding/types";
 
 /**
  * Construct the prompt for the LLM

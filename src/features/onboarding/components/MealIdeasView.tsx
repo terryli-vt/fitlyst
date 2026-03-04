@@ -123,7 +123,7 @@ export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
                           <ChevronDown className="h-5 w-5 text-teal-700" />
                         )}
                       </button>
-                      
+
                       {isExpanded && (
                         <div className="mt-4 space-y-2">
                           {meal.cookingInstructions.map((step, stepIndex) => (
