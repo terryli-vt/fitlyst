@@ -1,0 +1,2 @@
+- `.env` stores database and API credentials. This file should not be committed to version control.
+- `DATABASE_URL` & `OPENAI_API_KEY`
