@@ -1,7 +1,10 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
 
-export default auth((req) => {
+const { auth } = NextAuth(authConfig);
+
+export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
 
@@ -12,12 +15,11 @@ export default auth((req) => {
   );
 
   if (isProtected && !isLoggedIn) {
-    const loginUrl = new URL("/login", req.nextUrl.origin);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 });
 
 export const config = {
-  // Run middleware on all routes except static assets and Next.js internals
+  // Run proxy on all routes except static assets and Next.js internals
   matcher: ["/((?!api/auth|_next/static|_next/image|favicon.ico).*)"],
 };

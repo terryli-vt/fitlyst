@@ -1,23 +1,14 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/db";
-import { accounts, sessions, users, verificationTokens } from "@/db/schema";
+import { accounts, users } from "@/db/schema";
+import { authConfig } from "@/auth.config";
 
+// This initializes NextAuth with Drizzle ORM adapter and Google provider for authentication.
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: DrizzleAdapter(db, {
     usersTable: users,
     accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
   }),
-  providers: [
-    Google,
-    // To add more providers later (e.g. GitHub, Magic Link):
-    // import GitHub from "next-auth/providers/github"
-    // GitHub,
-  ],
-  pages: {
-    signIn: "/login",
-  },
 });

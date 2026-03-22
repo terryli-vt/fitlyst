@@ -8,6 +8,8 @@ import {
 } from "drizzle-orm/pg-core";
 import type { AdapterAccountType } from "next-auth/adapters";
 
+// See Auth.js schema docs: https://authjs.dev/getting-started/adapters/drizzle
+
 // ─── Users ────────────────────────────────────────────────────────────────────
 // NextAuth requires: id, name, email, emailVerified, image
 // We keep our own createdAt on top of that.
@@ -44,26 +46,9 @@ export const accounts = pgTable(
   },
   (account) => [
     primaryKey({ columns: [account.provider, account.providerAccountId] }),
-  ]
+  ],
 );
 
-export const sessions = pgTable("sessions", {
-  sessionToken: text("session_token").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expires: timestamp("expires", { mode: "date" }).notNull(),
-});
-
-export const verificationTokens = pgTable(
-  "verification_tokens",
-  {
-    identifier: text("identifier").notNull(),
-    token: text("token").notNull(),
-    expires: timestamp("expires", { mode: "date" }).notNull(),
-  },
-  (vt) => [primaryKey({ columns: [vt.identifier, vt.token] })]
-);
 
 // ─── App Tables ───────────────────────────────────────────────────────────────
 export const userProfiles = pgTable("user_profiles", {
