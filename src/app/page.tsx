@@ -8,12 +8,17 @@
 
 import Link from "next/link";
 import { Sparkles, Github, Mail } from "lucide-react";
+import LoginButton from "@/components/LoginButton";
 
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <header className="bg-gradient-to-b from-teal-50 to-white pt-12 pb-20 px-4 sm:pt-16 sm:pb-32">
+        {/* Top Nav */}
+        <nav className="flex justify-end mb-8 px-2 sm:px-6">
+          <LoginButton />
+        </nav>
         <div className="max-w-4xl mx-auto text-center">
           {/* App Name - Large, bold, brand color */}
           <h1 className="text-5xl sm:text-6xl font-bold text-teal-700 mb-6 tracking-tight">
