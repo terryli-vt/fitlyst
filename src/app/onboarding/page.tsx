@@ -1,16 +1,7 @@
 "use client";
 
-/**
- * Onboarding Flow Page
- *
- * Thin routing file — all feature logic lives in src/features/onboarding/.
- *
- * Future considerations:
- * - User authentication: Add user ID to profile object when users can sign in
- * - Data persistence: Save profile object to database/API after completion
- * - Calculation service: Move calculation logic to separate service/API endpoint
- */
-
+import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { useOnboarding } from "@/features/onboarding/hooks/useOnboarding";
@@ -24,10 +15,34 @@ import { MealIdeasView } from "@/features/onboarding/components/MealIdeasView";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { status } = useSession();
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+
+    // Authenticated — check if onboarding is already done
+    fetch("/api/profile")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.profile) {
+          router.push("/profile");
+        } else {
+          setAuthChecked(true);
+        }
+      });
+  }, [status, router]);
 
   const {
     currentStep,
     showResults,
+    isSaving,
+    saveError,
     profile,
     heightUnit,
     weightUnit,
@@ -48,6 +63,27 @@ export default function OnboardingPage() {
     generateMealIdeas,
     handleBack,
   } = useMealIdeas();
+
+  // Show loading screen during auth/profile check
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-teal-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Show saving/calculating loading screen
+  if (isSaving) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-lg font-medium text-teal-700">Calculating your nutrition plan...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading page while meal ideas are being generated
   if (isLoading) {
@@ -121,9 +157,9 @@ export default function OnboardingPage() {
 
               <button
                 onClick={handleNext}
-                disabled={!validateCurrentStep()}
+                disabled={!validateCurrentStep() || isSaving}
                 className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-white transition-colors ${
-                  validateCurrentStep()
+                  validateCurrentStep() && !isSaving
                     ? "bg-teal-600 hover:bg-teal-700"
                     : "bg-gray-300 cursor-not-allowed"
                 }`}
@@ -136,21 +172,33 @@ export default function OnboardingPage() {
 
           {/* Results View Actions */}
           {showResults && (
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={handlePrevious}
-                className="px-6 py-3 rounded-lg font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                Edit Answers
-              </button>
-              <button
-                onClick={() => router.push("/")}
-                className="px-6 py-3 rounded-lg font-medium text-white bg-teal-600 hover:bg-teal-700 transition-colors"
-              >
-                Done
-              </button>
-              {/* Future: Add "Save Profile" button here when authentication is implemented */}
-            </div>
+            <>
+              {saveError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 text-sm mb-4">
+                  {saveError}
+                </div>
+              )}
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={handlePrevious}
+                  className="px-6 py-3 rounded-lg font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Edit Answers
+                </button>
+                <button
+                  onClick={() => router.push("/")}
+                  className="px-6 py-3 rounded-lg font-medium text-white bg-teal-600 hover:bg-teal-700 transition-colors"
+                >
+                  Done
+                </button>
+                <button
+                  onClick={() => router.push("/profile")}
+                  className="px-6 py-3 rounded-lg font-medium text-white bg-teal-800 hover:bg-teal-900 transition-colors"
+                >
+                  Go to Profile
+                </button>
+              </div>
+            </>
           )}
         </div>
       </main>

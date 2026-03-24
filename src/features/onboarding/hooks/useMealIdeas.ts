@@ -126,10 +126,18 @@ export function useMealIdeas() {
 
       // const mealIdeasData = data.mealIdeas as MealIdea[];
       const mealIdeasData = dummyData.mealIdeas as MealIdea[];
+
+      await fetch("/api/meal-ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meals: mealIdeasData }),
+      });
+
       setMealIdeas(mealIdeasData);
       setShowMealIdeas(true);
-    } catch (err: any) {
-      setError(err.message || "An error occurred. Please try again.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "An error occurred. Please try again.";
+      setError(message);
       console.error("Error generating meal ideas:", err);
     } finally {
       setIsLoading(false);

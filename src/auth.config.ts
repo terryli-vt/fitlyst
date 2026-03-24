@@ -9,4 +9,10 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
+  callbacks: {
+    session({ session, token }) {
+      if (token.sub) session.user.id = token.sub;
+      return session;
+    },
+  },
 };

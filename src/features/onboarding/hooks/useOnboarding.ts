@@ -5,6 +5,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { UserProfile, NutritionResults } from "../types";
 import { STEPS } from "../config";
 import { calculateNutrition } from "../utils/calculateNutrition";
@@ -17,8 +18,11 @@ import { calculateNutrition } from "../utils/calculateNutrition";
  * Future: Could be extended to handle loading/saving from API when authentication is added.
  */
 export function useOnboarding() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [showResults, setShowResults] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // User profile state - structured for future persistence
   // <UserProfile> is a TypeScript generic type, meaning the profile state must follow the structure defined by the UserProfile interface or type.
@@ -141,41 +145,55 @@ export function useOnboarding() {
   };
 
   /**
-   * Navigate to next step
-   * Validates current answer before proceeding
+   * Navigate to next step.
+   * On the last step, saves profile + nutrition to the API (showing a loading screen),
+   * then reveals the results page on success.
+   * Uses upsert, so re-submitting after "Edit Answers" will update existing data.
    */
-  const handleNext = () => {
-    if (!validateCurrentStep()) {
-      return; // Don't proceed if validation fails
-    }
+  const handleNext = async () => {
+    if (!validateCurrentStep()) return;
 
-    // If on last step, show results
     if (currentStep === STEPS.length - 1) {
-      setShowResults(true);
+      const nutrition = calculateNutrition(profile);
+      setIsSaving(true);
+      setSaveError(null);
+      try {
+        const res = await fetch("/api/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile, nutrition }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error ?? "Failed to save profile");
+        }
+        setShowResults(true);
+      } catch (err: unknown) {
+        setSaveError(err instanceof Error ? err.message : "Failed to save profile");
+      } finally {
+        setIsSaving(false);
+      }
     } else {
       setCurrentStep((prev) => prev + 1);
     }
   };
 
   /**
-   * Navigate to previous step
-   * Only works if not on first step
+   * Navigate to previous step.
+   * From the results view, goes back to the last questionnaire step.
    */
   const handlePrevious = () => {
-    // If on results view, go back to last step (step 3, index 3)
     if (showResults) {
       setShowResults(false);
       setCurrentStep(STEPS.length - 1);
       return;
     }
-
-    // Otherwise, go to previous step
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     }
   };
 
-  // Calculate results when showing results view
+  // Calculate results once showResults is true
   const results: NutritionResults | null = showResults
     ? calculateNutrition(profile)
     : null;
@@ -184,6 +202,8 @@ export function useOnboarding() {
     // State
     currentStep,
     showResults,
+    isSaving,
+    saveError,
     profile,
     heightUnit,
     weightUnit,
