@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { userProfiles, nutritionResults } from "@/db/schema";
 import type { UserProfile, NutritionResults } from "@/features/onboarding/types";
+import { calculateNutrition } from "@/features/onboarding/utils/calculateNutrition";
 
 /**
  * GET /api/profile
@@ -165,4 +166,113 @@ export async function POST(request: NextRequest) {
     });
 
   return NextResponse.json({ success: true });
+}
+
+/**
+ * PATCH /api/profile
+ *
+ * Updates the user's profile fields (in metric units) and recalculates nutrition.
+ *
+ * Expected body:
+ * {
+ *   heightCm: number
+ *   weightKg: number
+ *   age: number
+ *   gender: string
+ *   activityLevel: string
+ *   goal: string
+ *   goalPriority: string
+ * }
+ *
+ * Returns { success: true, nutrition: NutritionResults }
+ */
+export async function PATCH(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const userId = session.user.id;
+  const body = await request.json();
+  const { heightCm, weightKg, age, gender, activityLevel, goal, goalPriority } = body;
+
+  // Validate enum fields
+  const validGenders = ["male", "female"] as const;
+  const validActivityLevels = ["sedentary", "light", "moderate", "active", "very_active"] as const;
+  const validGoals = ["bulk", "cut"] as const;
+  const validGoalPriorities = ["aggressive", "balanced", "conservative"] as const;
+
+  if (!validGenders.includes(gender)) return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
+  if (!validActivityLevels.includes(activityLevel)) return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
+  if (!validGoals.includes(goal)) return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
+  if (!validGoalPriorities.includes(goalPriority)) return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
+
+  const hCm = parseFloat(heightCm);
+  const wKg = parseFloat(weightKg);
+  const ageNum = parseInt(age);
+
+  if (isNaN(hCm) || hCm <= 0 || hCm > 300) return NextResponse.json({ error: "Invalid height" }, { status: 400 });
+  if (isNaN(wKg) || wKg <= 0 || wKg > 500) return NextResponse.json({ error: "Invalid weight" }, { status: 400 });
+  if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) return NextResponse.json({ error: "Invalid age" }, { status: 400 });
+
+  // Build a UserProfile to pass to calculateNutrition (values already in metric)
+  const fakeProfile: UserProfile = {
+    height: { value: String(hCm), unit: "cm" },
+    weight: { value: String(wKg), unit: "kg" },
+    age: String(ageNum),
+    gender,
+    activityLevel,
+    goal,
+    goalPriority,
+  };
+
+  const nutrition = calculateNutrition(fakeProfile);
+  const now = new Date();
+
+  await db
+    .insert(userProfiles)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      height: hCm,
+      weight: wKg,
+      age: ageNum,
+      gender,
+      activityLevel,
+      goal,
+      goalPriority,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: userProfiles.userId,
+      set: { height: hCm, weight: wKg, age: ageNum, gender, activityLevel, goal, goalPriority, updatedAt: now },
+    });
+
+  await db
+    .insert(nutritionResults)
+    .values({
+      id: crypto.randomUUID(),
+      userId,
+      calories: nutrition.calories,
+      protein: nutrition.protein,
+      carbs: nutrition.carbs,
+      fat: nutrition.fat,
+      bmi: nutrition.bmi,
+      bmr: nutrition.bmr,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: nutritionResults.userId,
+      set: {
+        calories: nutrition.calories,
+        protein: nutrition.protein,
+        carbs: nutrition.carbs,
+        fat: nutrition.fat,
+        bmi: nutrition.bmi,
+        bmr: nutrition.bmr,
+        updatedAt: now,
+      },
+    });
+
+  return NextResponse.json({ success: true, nutrition });
 }
