@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { userProfiles, nutritionResults, mealIdeas } from "@/db/schema";
-import ProfileContent from "./ProfileContent";
+import ProfileContent from "@/features/profile/components/ProfileContent";
 import type { MealIdea } from "@/features/onboarding/types";
 
 export default async function ProfilePage() {
