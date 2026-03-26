@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
+// This proxy middleware checks if the user is authenticated before allowing access to protected routes. If the user is not authenticated and tries to access a protected route, they will be redirected to the login page.
 export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth;
   const { pathname } = req.nextUrl;
@@ -11,7 +12,7 @@ export const proxy = auth((req) => {
   // Protected routes — redirect to login if not authenticated
   const protectedPrefixes = ["/onboarding", "/dashboard"];
   const isProtected = protectedPrefixes.some((prefix) =>
-    pathname.startsWith(prefix)
+    pathname.startsWith(prefix),
   );
 
   if (isProtected && !isLoggedIn) {

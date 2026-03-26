@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { userProfiles, nutritionResults } from "@/db/schema";
-import type { UserProfile, NutritionResults } from "@/features/onboarding/types";
+import type {
+  UserProfile,
+  NutritionResults,
+} from "@/features/onboarding/types";
 import { calculateNutrition } from "@/features/onboarding/utils/calculateNutrition";
 
 /**
@@ -22,7 +25,9 @@ export async function GET() {
 
   const [profile, nutrition] = await Promise.all([
     db.query.userProfiles.findFirst({ where: eq(userProfiles.userId, userId) }),
-    db.query.nutritionResults.findFirst({ where: eq(nutritionResults.userId, userId) }),
+    db.query.nutritionResults.findFirst({
+      where: eq(nutritionResults.userId, userId),
+    }),
   ]);
 
   return NextResponse.json({
@@ -54,29 +59,59 @@ export async function POST(request: NextRequest) {
   const userId = session.user.id;
 
   const body = await request.json();
-  const { profile, nutrition }: { profile: UserProfile; nutrition: NutritionResults } = body;
+  const {
+    profile,
+    nutrition,
+  }: { profile: UserProfile; nutrition: NutritionResults } = body;
 
   if (!profile || !nutrition) {
-    return NextResponse.json({ error: "Missing profile or nutrition data" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing profile or nutrition data" },
+      { status: 400 },
+    );
   }
 
   // Validate enum fields
   const validGenders = ["male", "female"] as const;
-  const validActivityLevels = ["sedentary", "light", "moderate", "active", "very_active"] as const;
+  const validActivityLevels = [
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very_active",
+  ] as const;
   const validGoals = ["bulk", "cut"] as const;
-  const validGoalPriorities = ["aggressive", "balanced", "conservative"] as const;
+  const validGoalPriorities = [
+    "aggressive",
+    "balanced",
+    "conservative",
+  ] as const;
 
-  if (!validGenders.includes(profile.gender as typeof validGenders[number])) {
+  if (!validGenders.includes(profile.gender as (typeof validGenders)[number])) {
     return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
   }
-  if (!validActivityLevels.includes(profile.activityLevel as typeof validActivityLevels[number])) {
-    return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
+  if (
+    !validActivityLevels.includes(
+      profile.activityLevel as (typeof validActivityLevels)[number],
+    )
+  ) {
+    return NextResponse.json(
+      { error: "Invalid activity level" },
+      { status: 400 },
+    );
   }
-  if (!validGoals.includes(profile.goal as typeof validGoals[number])) {
+  if (!validGoals.includes(profile.goal as (typeof validGoals)[number])) {
     return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
   }
-  if (!validGoalPriorities.includes(profile.goalPriority as typeof validGoalPriorities[number])) {
-    return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
+  if (
+    !validGoalPriorities.includes(
+      profile.goalPriority as (typeof validGoalPriorities)[number],
+    )
+  ) {
+    return NextResponse.json(
+      { error: "Invalid goal priority" },
+      { status: 400 },
+    );
   }
 
   // Convert height to cm
@@ -111,6 +146,7 @@ export async function POST(request: NextRequest) {
 
   const now = new Date();
 
+  // onConflictDoUpdate is used to perform an upsert: if a record for this user already exists, it will be updated with the new values; if not, a new record will be inserted. This ensures that we only have one profile and one nutrition result per user, which are updated as needed.
   await db
     .insert(userProfiles)
     .values({
@@ -194,26 +230,50 @@ export async function PATCH(request: NextRequest) {
 
   const userId = session.user.id;
   const body = await request.json();
-  const { heightCm, weightKg, age, gender, activityLevel, goal, goalPriority } = body;
+  const { heightCm, weightKg, age, gender, activityLevel, goal, goalPriority } =
+    body;
 
   // Validate enum fields
   const validGenders = ["male", "female"] as const;
-  const validActivityLevels = ["sedentary", "light", "moderate", "active", "very_active"] as const;
+  const validActivityLevels = [
+    "sedentary",
+    "light",
+    "moderate",
+    "active",
+    "very_active",
+  ] as const;
   const validGoals = ["bulk", "cut"] as const;
-  const validGoalPriorities = ["aggressive", "balanced", "conservative"] as const;
+  const validGoalPriorities = [
+    "aggressive",
+    "balanced",
+    "conservative",
+  ] as const;
 
-  if (!validGenders.includes(gender)) return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-  if (!validActivityLevels.includes(activityLevel)) return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
-  if (!validGoals.includes(goal)) return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
-  if (!validGoalPriorities.includes(goalPriority)) return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
+  if (!validGenders.includes(gender))
+    return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
+  if (!validActivityLevels.includes(activityLevel))
+    return NextResponse.json(
+      { error: "Invalid activity level" },
+      { status: 400 },
+    );
+  if (!validGoals.includes(goal))
+    return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
+  if (!validGoalPriorities.includes(goalPriority))
+    return NextResponse.json(
+      { error: "Invalid goal priority" },
+      { status: 400 },
+    );
 
   const hCm = parseFloat(heightCm);
   const wKg = parseFloat(weightKg);
   const ageNum = parseInt(age);
 
-  if (isNaN(hCm) || hCm <= 0 || hCm > 300) return NextResponse.json({ error: "Invalid height" }, { status: 400 });
-  if (isNaN(wKg) || wKg <= 0 || wKg > 500) return NextResponse.json({ error: "Invalid weight" }, { status: 400 });
-  if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120) return NextResponse.json({ error: "Invalid age" }, { status: 400 });
+  if (isNaN(hCm) || hCm <= 0 || hCm > 300)
+    return NextResponse.json({ error: "Invalid height" }, { status: 400 });
+  if (isNaN(wKg) || wKg <= 0 || wKg > 500)
+    return NextResponse.json({ error: "Invalid weight" }, { status: 400 });
+  if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120)
+    return NextResponse.json({ error: "Invalid age" }, { status: 400 });
 
   // Build a UserProfile to pass to calculateNutrition (values already in metric)
   const fakeProfile: UserProfile = {
@@ -245,7 +305,16 @@ export async function PATCH(request: NextRequest) {
     })
     .onConflictDoUpdate({
       target: userProfiles.userId,
-      set: { height: hCm, weight: wKg, age: ageNum, gender, activityLevel, goal, goalPriority, updatedAt: now },
+      set: {
+        height: hCm,
+        weight: wKg,
+        age: ageNum,
+        gender,
+        activityLevel,
+        goal,
+        goalPriority,
+        updatedAt: now,
+      },
     });
 
   await db
