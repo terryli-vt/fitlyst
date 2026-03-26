@@ -6,7 +6,10 @@ interface ResultsViewProps {
   results: NutritionResults;
   isLoading: boolean;
   error: string | null;
+  hasMealIdeas: boolean;
+  remainingGenerations: number;
   onGenerateMealIdeas: () => void;
+  onViewMealIdeas: () => void;
 }
 
 /**
@@ -20,7 +23,10 @@ export function ResultsView({
   results,
   isLoading,
   error,
+  hasMealIdeas,
+  remainingGenerations,
   onGenerateMealIdeas,
+  onViewMealIdeas,
 }: ResultsViewProps) {
   return (
     <div className="space-y-6">
@@ -82,15 +88,38 @@ export function ResultsView({
 
       {/* Generate Meal Ideas */}
       <div className="space-y-3">
-        <button
-          onClick={onGenerateMealIdeas}
-          disabled={isLoading}
-          className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
-            isLoading ? "bg-gray-300 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700"
-          }`}
-        >
-          {isLoading ? "Generating meal ideas..." : "Generate Meal Ideas"}
-        </button>
+        <p className="text-xs text-gray-400 text-right">
+          {remainingGenerations} generation{remainingGenerations !== 1 ? "s" : ""} remaining today
+        </p>
+        {hasMealIdeas ? (
+          <div className="flex gap-3">
+            <button
+              onClick={onViewMealIdeas}
+              className="flex-1 py-3 rounded-xl font-semibold text-teal-700 border border-teal-600 hover:bg-teal-50 transition-colors"
+            >
+              View Meal Ideas
+            </button>
+            <button
+              onClick={onGenerateMealIdeas}
+              disabled={isLoading || remainingGenerations === 0}
+              className={`flex-1 py-3 rounded-xl font-semibold text-white transition-colors ${
+                isLoading || remainingGenerations === 0 ? "bg-gray-300 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700"
+              }`}
+            >
+              {isLoading ? "Regenerating..." : "Regenerate Meal Ideas"}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={onGenerateMealIdeas}
+            disabled={isLoading || remainingGenerations === 0}
+            className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
+              isLoading || remainingGenerations === 0 ? "bg-gray-300 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700"
+            }`}
+          >
+            {isLoading ? "Generating meal ideas..." : "Generate Meal Ideas"}
+          </button>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">

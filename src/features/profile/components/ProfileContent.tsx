@@ -15,6 +15,7 @@ interface ProfileContentProps {
   initialProfile: DBProfile | null;
   initialNutrition: DBNutrition | null;
   initialMeals: MealIdea[] | null;
+  initialRemainingGenerations: number;
 }
 
 export default function ProfileContent({
@@ -22,9 +23,11 @@ export default function ProfileContent({
   initialProfile,
   initialNutrition,
   initialMeals,
+  initialRemainingGenerations,
 }: ProfileContentProps) {
   const [profile, setProfile] = useState<DBProfile | null>(initialProfile);
   const [nutrition, setNutrition] = useState<DBNutrition | null>(initialNutrition);
+  const [isGeneratingMeals, setIsGeneratingMeals] = useState(false);
 
   const handleSaved = (newProfile: DBProfile, newNutrition: DBNutrition) => {
     setProfile(newProfile);
@@ -45,12 +48,17 @@ export default function ProfileContent({
         <ProfileHeader user={user} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <UserProfileCard profile={profile} onSaved={handleSaved} />
+          <UserProfileCard profile={profile} onSaved={handleSaved} editDisabled={isGeneratingMeals} />
           {nutrition && <NutritionCard nutrition={nutrition} />}
         </div>
 
         {nutrition && (
-          <MealRecommendations initialMeals={initialMeals} nutrition={nutrition} />
+          <MealRecommendations
+            initialMeals={initialMeals}
+            nutrition={nutrition}
+            initialRemainingGenerations={initialRemainingGenerations}
+            onGeneratingChange={setIsGeneratingMeals}
+          />
         )}
       </div>
     </div>

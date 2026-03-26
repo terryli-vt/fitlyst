@@ -60,7 +60,9 @@ export default function OnboardingPage() {
     error,
     mealIdeas,
     showMealIdeas,
+    remainingGenerations,
     generateMealIdeas,
+    viewMealIdeas,
     handleBack,
   } = useMealIdeas();
 
@@ -132,7 +134,10 @@ export default function OnboardingPage() {
                 results={results}
                 isLoading={isLoading}
                 error={error}
+                hasMealIdeas={!!mealIdeas && mealIdeas.length > 0}
+                remainingGenerations={remainingGenerations}
                 onGenerateMealIdeas={() => generateMealIdeas(results)}
+                onViewMealIdeas={viewMealIdeas}
               />
             ) : (
               <StepContent

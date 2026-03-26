@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { userProfiles, nutritionResults, mealIdeas } from "@/db/schema";
 import ProfileContent from "@/features/profile/components/ProfileContent";
 import type { MealIdea } from "@/features/onboarding/types";
+import { getRemainingGenerations } from "@/lib/mealGenerationLimit";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -24,6 +25,8 @@ export default async function ProfilePage() {
   const meals: MealIdea[] | null = mealRecord
     ? (JSON.parse(mealRecord.mealsJson) as MealIdea[])
     : null;
+
+  const remainingGenerations = getRemainingGenerations(mealRecord);
 
   return (
     <ProfileContent
@@ -54,6 +57,7 @@ export default async function ProfilePage() {
           : null
       }
       initialMeals={meals}
+      initialRemainingGenerations={remainingGenerations}
     />
   );
 }

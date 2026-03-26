@@ -90,4 +90,6 @@ export const mealIdeas = pgTable("meal_ideas", {
     .references(() => users.id),
   mealsJson: text("meals_json").notNull(),
   generatedAt: timestamp("generated_at").defaultNow().notNull(),
+  dailyCount: integer("daily_count").default(0).notNull(),
+  lastGeneratedDate: text("last_generated_date"), // "YYYY-MM-DD", nullable
 });

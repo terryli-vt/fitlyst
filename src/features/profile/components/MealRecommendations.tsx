@@ -8,19 +8,29 @@ import type { DBNutrition } from "../types";
 interface MealRecommendationsProps {
   initialMeals: MealIdea[] | null;
   nutrition: DBNutrition;
+  initialRemainingGenerations: number;
+  onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
 export default function MealRecommendations({
   initialMeals,
   nutrition,
+  initialRemainingGenerations,
+  onGeneratingChange,
 }: MealRecommendationsProps) {
   const [meals, setMeals] = useState<MealIdea[] | null>(initialMeals);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const setGenerating = (value: boolean) => {
+    setIsGenerating(value);
+    onGeneratingChange?.(value);
+  };
   const [error, setError] = useState<string | null>(null);
   const [expandedMeals, setExpandedMeals] = useState<Set<number>>(new Set());
+  const [remainingGenerations, setRemainingGenerations] = useState(initialRemainingGenerations);
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
+    setGenerating(true);
     setError(null);
 
     try {
@@ -38,18 +48,13 @@ export default function MealRecommendations({
 
       const { mealIdeas: newMeals } = await genResponse.json();
 
-      await fetch("/api/meal-ideas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meals: newMeals }),
-      });
-
       setMeals(newMeals);
       setExpandedMeals(new Set());
+      setRemainingGenerations((prev) => Math.max(0, prev - 1));
     } catch {
       setError("An error occurred. Please try again.");
     } finally {
-      setIsGenerating(false);
+      setGenerating(false);
     }
   };
 
@@ -57,14 +62,17 @@ export default function MealRecommendations({
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-bold text-gray-900">Meal Recommendations</h2>
-        <button
-          onClick={handleGenerate}
-          disabled={isGenerating}
-          className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors disabled:opacity-50"
-        >
-          <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
-          {isGenerating ? "Generating…" : meals ? "Regenerate" : "Generate"}
-        </button>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-400">{remainingGenerations} left today</span>
+          <button
+            onClick={handleGenerate}
+            disabled={isGenerating || remainingGenerations === 0}
+            className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`h-4 w-4 ${isGenerating ? "animate-spin" : ""}`} />
+            {isGenerating ? "Generating…" : meals ? "Regenerate" : "Generate"}
+          </button>
+        </div>
       </div>
 
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}

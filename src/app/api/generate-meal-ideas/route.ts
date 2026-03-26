@@ -16,8 +16,13 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
+import { auth } from "@/auth";
+import { db } from "@/db";
+import { mealIdeas as mealIdeasTable } from "@/db/schema";
 import { openai } from "@/lib/openai";
 import type { NutritionResults, MealIdea } from "@/features/onboarding/types";
+import { getTodayCount, getTodayString, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
 
 /**
  * Construct the prompt for the LLM
@@ -120,6 +125,27 @@ function parseMealIdeas(response: string): MealIdea[] {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Auth check
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const userId = session.user.id;
+
+    // Rate limit check
+    const today = getTodayString();
+    const record = await db.query.mealIdeas.findFirst({
+      where: eq(mealIdeasTable.userId, userId),
+    });
+    const todayCount = getTodayCount(record);
+
+    if (todayCount >= DAILY_GENERATION_LIMIT) {
+      return NextResponse.json(
+        { error: `Daily limit of ${DAILY_GENERATION_LIMIT} generations reached. Try again tomorrow.` },
+        { status: 429 }
+      );
+    }
+
     // Validate API key is configured
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -170,8 +196,33 @@ export async function POST(request: NextRequest) {
     // Parse and validate response
     const mealIdeas = parseMealIdeas(responseText);
 
-    // Return meal ideas
-    return NextResponse.json({ mealIdeas });
+    // Save meals + increment daily count in a single upsert
+    const newCount = todayCount + 1;
+    const mealsJson = JSON.stringify(mealIdeas);
+    await db
+      .insert(mealIdeasTable)
+      .values({
+        id: crypto.randomUUID(),
+        userId,
+        mealsJson,
+        generatedAt: new Date(),
+        dailyCount: newCount,
+        lastGeneratedDate: today,
+      })
+      .onConflictDoUpdate({
+        target: mealIdeasTable.userId,
+        set: {
+          mealsJson,
+          generatedAt: new Date(),
+          dailyCount: newCount,
+          lastGeneratedDate: today,
+        },
+      });
+
+    return NextResponse.json({
+      mealIdeas,
+      remainingGenerations: DAILY_GENERATION_LIMIT - newCount,
+    });
 
   } catch (error: any) {
     console.error("Error generating meal ideas:", error);

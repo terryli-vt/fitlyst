@@ -27,6 +27,7 @@ const goalPriorityLabels: Record<string, string> = {
 interface UserProfileCardProps {
   profile: DBProfile | null;
   onSaved: (profile: DBProfile, nutrition: DBNutrition) => void;
+  editDisabled?: boolean;
 }
 
 const inputClass =
@@ -34,7 +35,7 @@ const inputClass =
 const labelClass =
   "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1";
 
-export default function UserProfileCard({ profile, onSaved }: UserProfileCardProps) {
+export default function UserProfileCard({ profile, onSaved, editDisabled = false }: UserProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     heightCm: profile?.height?.toString() ?? "",
@@ -128,7 +129,8 @@ export default function UserProfileCard({ profile, onSaved }: UserProfileCardPro
         {!isEditing && profile && (
           <button
             onClick={handleEdit}
-            className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors"
+            disabled={editDisabled}
+            className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Pencil className="h-4 w-4" />
             Edit

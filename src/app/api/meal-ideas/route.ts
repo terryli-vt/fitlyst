@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { mealIdeas } from "@/db/schema";
 import type { MealIdea } from "@/features/onboarding/types";
+import { getRemainingGenerations } from "@/lib/mealGenerationLimit";
 
 /**
  * POST /api/meal-ideas
@@ -59,9 +60,14 @@ export async function GET() {
     where: eq(mealIdeas.userId, session.user.id),
   });
 
+  const remainingGenerations = getRemainingGenerations(record);
+
   if (!record) {
-    return NextResponse.json({ meals: null });
+    return NextResponse.json({ meals: null, remainingGenerations });
   }
 
-  return NextResponse.json({ meals: JSON.parse(record.mealsJson) });
+  return NextResponse.json({
+    meals: JSON.parse(record.mealsJson),
+    remainingGenerations,
+  });
 }
