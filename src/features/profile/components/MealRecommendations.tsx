@@ -46,11 +46,13 @@ export default function MealRecommendations({
         return;
       }
 
-      const { mealIdeas: newMeals } = await genResponse.json();
+      const { mealIdeas: newMeals, remainingGenerations: newRemaining } = await genResponse.json();
 
       setMeals(newMeals);
       setExpandedMeals(new Set());
-      setRemainingGenerations((prev) => Math.max(0, prev - 1));
+      if (typeof newRemaining === "number") {
+        setRemainingGenerations(newRemaining);
+      }
     } catch {
       setError("An error occurred. Please try again.");
     } finally {
@@ -60,9 +62,9 @@ export default function MealRecommendations({
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
         <h2 className="text-lg font-bold text-gray-900">Meal Recommendations</h2>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 self-end sm:self-auto">
           <span className="text-xs text-gray-400">{remainingGenerations} left today</span>
           <button
             onClick={handleGenerate}

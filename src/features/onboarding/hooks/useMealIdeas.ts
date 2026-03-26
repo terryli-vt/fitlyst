@@ -153,9 +153,15 @@ export function useMealIdeas() {
         body: JSON.stringify({ meals: mealIdeasData }),
       });
 
+      // Re-fetch to get server-authoritative remaining count
+      const syncRes = await fetch("/api/meal-ideas");
+      const syncData = await syncRes.json();
+      if (typeof syncData.remainingGenerations === "number") {
+        setRemainingGenerations(syncData.remainingGenerations);
+      }
+
       setMealIdeas(mealIdeasData);
       setShowMealIdeas(true);
-      setRemainingGenerations((prev) => Math.max(0, prev - 1));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "An error occurred. Please try again.";
       setError(message);
