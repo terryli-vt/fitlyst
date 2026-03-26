@@ -111,7 +111,15 @@ export default function OnboardingPage() {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="max-w-2xl w-full">
+        <div className={`w-full ${showResults ? "max-w-4xl" : "max-w-2xl"}`}>
+          {/* Heading */}
+          {!showResults && (
+            <div className="mb-6 text-center">
+              <h1 className="text-2xl font-bold text-gray-900">Tell us more about yourself</h1>
+              <p className="text-sm text-gray-500 mt-1">We&apos;ll use this to personalise your nutrition plan.</p>
+            </div>
+          )}
+
           {/* Progress Bar */}
           {!showResults && (
             <ProgressBar currentStep={currentStep} totalSteps={STEPS.length} />

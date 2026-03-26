@@ -15,11 +15,6 @@ interface ResultsViewProps {
  *
  * Intentionally kept as a pure display component — all async meal-generation
  * logic lives in the useMealIdeas hook so this file stays easy to read.
- *
- * Features:
- * - Shows daily nutrition targets (BMI, BMR, calories, macros)
- * - Generate meal ideas button (AI-powered)
- * - Loading and error states passed in from parent
  */
 export function ResultsView({
   results,
@@ -28,140 +23,103 @@ export function ResultsView({
   onGenerateMealIdeas,
 }: ResultsViewProps) {
   return (
-    <div className="text-center space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold text-teal-700 mb-4">
-          Your Nutrition Plan
-        </h2>
-        <p className="text-gray-600">
-          Based on your profile, here are your daily recommendations
-        </p>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-1">Your Nutrition Plan</h2>
+        <p className="text-gray-500 text-sm">Based on your profile, here are your daily recommendations</p>
       </div>
 
-      {/* Results Display */}
-      <div className="bg-gradient-to-br from-teal-50 to-cyan-50 rounded-2xl p-8 border border-teal-100">
-        <div className="space-y-6">
-          {/* BMI and BMR */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">BMI</div>
-              <div className="text-2xl font-bold text-teal-700">
-                {results.bmi}
-              </div>
-              <div className="text-xs text-gray-500">Body Mass Index</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">BMR</div>
-              <div className="text-2xl font-bold text-teal-700">
-                {results.bmr}
-              </div>
-              <div className="text-xs text-gray-500">
-                kcal/day (Basal Metabolic Rate)
-              </div>
-            </div>
-          </div>
+      {/* Nutrition Stats */}
+      <div>
+        <h3 className="text-base font-bold text-gray-900 mb-3">Daily Targets</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <NutritionStat label="Daily Calories" value={results.calories} unit="kcal" colorClass="bg-teal-50 text-teal-700" />
+          <NutritionStat label="Protein" value={results.protein} unit="g/day" colorClass="bg-blue-50 text-blue-700" />
+          <NutritionStat label="Carbohydrates" value={results.carbs} unit="g/day" colorClass="bg-amber-50 text-amber-700" />
+          <NutritionStat label="Fat" value={results.fat} unit="g/day" colorClass="bg-rose-50 text-rose-700" />
+        </div>
+      </div>
 
-          {/* Calories */}
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="text-sm text-gray-600 mb-1">Daily Calories</div>
-            <div className="text-4xl font-bold text-teal-700">
-              {results.calories}
-            </div>
-            <div className="text-sm text-gray-500 mt-1">kcal</div>
-          </div>
-
-          {/* Macros */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Protein</div>
-              <div className="text-2xl font-bold text-teal-700">
-                {results.protein}
-              </div>
-              <div className="text-xs text-gray-500">grams</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Carbs</div>
-              <div className="text-2xl font-bold text-teal-700">
-                {results.carbs}
-              </div>
-              <div className="text-xs text-gray-500">grams</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm">
-              <div className="text-xs text-gray-600 mb-1">Fat</div>
-              <div className="text-2xl font-bold text-teal-700">
-                {results.fat}
-              </div>
-              <div className="text-xs text-gray-500">grams</div>
-            </div>
-          </div>
+      {/* BMI & BMR */}
+      <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100">
+        <div className="bg-gray-50 rounded-xl px-4 py-3">
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">BMI</p>
+          <p className="text-2xl font-bold text-gray-800">{results.bmi}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Body Mass Index</p>
+        </div>
+        <div className="bg-gray-50 rounded-xl px-4 py-3">
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">BMR</p>
+          <p className="text-2xl font-bold text-gray-800">
+            {Math.round(results.bmr)}{" "}
+            <span className="text-sm font-medium text-gray-500">kcal</span>
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5">Basal Metabolic Rate</p>
         </div>
       </div>
 
       {/* Adjustment Tips */}
-      <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100">
-        <h3 className="text-lg font-semibold text-blue-900 mb-4">
-          💡 Adjustment Tips
-        </h3>
-        <ul className="space-y-3 text-left text-gray-700">
-          <li className="flex items-start">
-            <span className="text-blue-600 mr-2">•</span>
-            <span>
-              <strong>Recalculate every 2–3 weeks</strong> to adjust your plan
-              based on progress
-            </span>
+      <div className="bg-blue-50 rounded-2xl p-5 border border-blue-100">
+        <h3 className="text-sm font-bold text-blue-900 mb-3">Adjustment Tips</h3>
+        <ul className="space-y-2 text-sm text-gray-700">
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 mt-0.5">•</span>
+            <span><strong>Recalculate every 2–3 weeks</strong> to adjust your plan based on progress</span>
           </li>
-
-          <li className="flex items-start">
-            <span className="text-blue-600 mr-2">•</span>
-            <span>
-              <strong>Bulking:</strong> Aim to gain{" "}
-              <strong>0.25–0.5 kg/week</strong> (0.55–1.1 lb/week)
-            </span>
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 mt-0.5">•</span>
+            <span><strong>Bulking:</strong> Aim to gain <strong>0.25–0.5 kg/week</strong> (0.55–1.1 lb/week)</span>
           </li>
-
-          <li className="flex items-start">
-            <span className="text-blue-600 mr-2">•</span>
-            <span>
-              <strong>Cutting:</strong> Aim to lose{" "}
-              <strong>0.3–0.7 kg/week</strong> (0.66–1.54 lb/week)
-            </span>
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 mt-0.5">•</span>
+            <span><strong>Cutting:</strong> Aim to lose <strong>0.3–0.7 kg/week</strong> (0.66–1.54 lb/week)</span>
           </li>
-
-          <li className="flex items-start">
-            <span className="text-blue-600 mr-2">•</span>
-            <span>
-              <strong>Slightly higher carbs on training days</strong> to support
-              performance and recovery
-            </span>
+          <li className="flex items-start gap-2">
+            <span className="text-blue-500 mt-0.5">•</span>
+            <span><strong>Slightly higher carbs on training days</strong> to support performance and recovery</span>
           </li>
         </ul>
       </div>
 
-      {/* Generate Meal Ideas Section */}
-      <div className="space-y-4">
+      {/* Generate Meal Ideas */}
+      <div className="space-y-3">
         <button
           onClick={onGenerateMealIdeas}
           disabled={isLoading}
-          className={`px-6 py-3 rounded-lg font-medium text-white transition-colors ${
-            isLoading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-teal-600 hover:bg-teal-700"
+          className={`w-full py-3 rounded-xl font-semibold text-white transition-colors ${
+            isLoading ? "bg-gray-300 cursor-not-allowed" : "bg-teal-600 hover:bg-teal-700"
           }`}
         >
-          {isLoading ? "Generating meal ideas..." : "Generate meal ideas"}
+          {isLoading ? "Generating meal ideas..." : "Generate Meal Ideas"}
         </button>
 
-        {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
             <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
+            <p>{error}</p>
           </div>
         )}
       </div>
+    </div>
+  );
+}
 
-      {/* Future: Add "Save Profile" button here when authentication is implemented */}
-      {/* Future: Add "Share Results" or "Export Plan" options */}
+function NutritionStat({
+  label,
+  value,
+  unit,
+  colorClass,
+}: {
+  label: string;
+  value: number;
+  unit: string;
+  colorClass: string;
+}) {
+  return (
+    <div className={`rounded-xl px-4 py-3 ${colorClass}`}>
+      <p className="text-xs font-medium opacity-70 uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-2xl font-bold">
+        {value} <span className="text-sm font-medium opacity-70">{unit}</span>
+      </p>
     </div>
   );
 }

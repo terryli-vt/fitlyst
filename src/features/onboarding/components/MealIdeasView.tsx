@@ -14,7 +14,7 @@ interface MealIdeasViewProps {
  * Displays generated meal ideas as cards with expandable cooking instructions
  */
 export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
-  const [expandedMealIndex, setExpandedMealIndex] = useState<number | null>(null);
+  const [expandedMeals, setExpandedMeals] = useState<Set<number>>(new Set());
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex flex-col">
@@ -43,12 +43,17 @@ export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
         <div className="max-w-4xl mx-auto">
           <div className="grid gap-5 grid-cols-1">
             {mealIdeas.map((meal, index) => {
-              const isExpanded = expandedMealIndex === index;
+              const isExpanded = expandedMeals.has(index);
+              const toggle = () =>
+                setExpandedMeals((prev) => {
+                  const next = new Set(prev);
+                  next.has(index) ? next.delete(index) : next.add(index);
+                  return next;
+                });
               return (
                 <div
                   key={index}
-                  className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-left cursor-pointer hover:shadow-md transition-shadow"
-                  onClick={() => setExpandedMealIndex(isExpanded ? null : index)}
+                  className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-left hover:shadow-md transition-shadow"
                 >
                   {/* Meal Type Badge */}
                   <div className="mb-3">
@@ -109,10 +114,7 @@ export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
                     <div className="mt-4 pt-4 border-t border-gray-100">
                       <button
                         className="flex items-center justify-between w-full text-left"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedMealIndex(isExpanded ? null : index);
-                        }}
+                        onClick={toggle}
                       >
                         <span className="text-sm font-semibold text-teal-700">
                           Cooking Instructions

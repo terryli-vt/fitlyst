@@ -17,7 +17,7 @@ export default function MealRecommendations({
   const [meals, setMeals] = useState<MealIdea[] | null>(initialMeals);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
+  const [expandedMeals, setExpandedMeals] = useState<Set<number>>(new Set());
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -45,7 +45,7 @@ export default function MealRecommendations({
       });
 
       setMeals(newMeals);
-      setExpandedMeal(null);
+      setExpandedMeals(new Set());
     } catch {
       setError("An error occurred. Please try again.");
     } finally {
@@ -70,21 +70,30 @@ export default function MealRecommendations({
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {isGenerating && (
-        <div className="flex items-center justify-center py-16 text-gray-400 gap-3">
-          <RefreshCw className="h-5 w-5 animate-spin" />
-          <span className="text-sm">Generating personalized meal ideas…</span>
+        <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+          <div className="flex items-center gap-3">
+            <RefreshCw className="h-5 w-5 animate-spin" />
+            <span className="text-sm">Generating personalized meal ideas…</span>
+          </div>
+          <span className="text-xs text-gray-400">This may take 10–30 seconds, please be patient.</span>
         </div>
       )}
 
       {!isGenerating && meals && meals.length > 0 && (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 items-start">
             {meals.map((meal, index) => (
               <MealCard
                 key={index}
                 meal={meal}
-                isExpanded={expandedMeal === index}
-                onToggle={() => setExpandedMeal(expandedMeal === index ? null : index)}
+                isExpanded={expandedMeals.has(index)}
+                onToggle={() =>
+                  setExpandedMeals((prev) => {
+                    const next = new Set(prev);
+                    next.has(index) ? next.delete(index) : next.add(index);
+                    return next;
+                  })
+                }
               />
             ))}
           </div>

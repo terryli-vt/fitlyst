@@ -19,6 +19,7 @@ export function MealIdeasLoading() {
           <p className="text-gray-600">
             Our AI is creating personalized meal suggestions just for you...
           </p>
+          <p className="text-sm text-gray-400">This may take 10–30 seconds, please be patient.</p>
         </div>
       </div>
     </div>
