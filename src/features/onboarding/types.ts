@@ -2,7 +2,6 @@
  * User Profile Type
  *
  * This structure is designed to be easily persisted to a database later.
- * Future: Add userId, createdAt, updatedAt fields when authentication is implemented.
  */
 export interface UserProfile {
   height: {

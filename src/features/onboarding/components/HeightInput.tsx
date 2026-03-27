@@ -1,4 +1,5 @@
 import type { UserProfile } from "../types";
+import { CM_PER_INCH } from "@/lib/units";
 
 interface HeightInputProps {
   value: UserProfile["height"];
@@ -27,7 +28,7 @@ export function HeightInput({
 
     // If converting from cm to ft/in
     if (unit === "cm" && currentValue > 0) {
-      const totalInches = currentValue / 2.54;
+      const totalInches = currentValue / CM_PER_INCH;
       const feet = Math.floor(totalInches / 12);
       const inches = Math.round(totalInches % 12);
       onChange({
@@ -41,7 +42,7 @@ export function HeightInput({
     // If converting from ft/in to cm
     if (unit === "ft" && currentValue > 0) {
       const totalInches = currentValue * 12 + currentInches;
-      const cm = Math.round(totalInches * 2.54);
+      const cm = Math.round(totalInches * CM_PER_INCH);
       onChange({
         unit: newUnit,
         value: cm.toString(),

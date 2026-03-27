@@ -1,28 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/error";
 import Link from "next/link";
 import { Pencil, Check, X, RefreshCw } from "lucide-react";
 import type { DBProfile, DBNutrition } from "../types";
+import {
+  GENDER_OPTIONS,
+  ACTIVITY_LEVELS,
+  GOAL_OPTIONS,
+  GOAL_PRIORITY_OPTIONS,
+} from "@/features/onboarding/config";
 
-const activityLevelLabels: Record<string, string> = {
-  sedentary: "Sedentary",
-  light: "Light (1–3 days/week)",
-  moderate: "Moderate (3–5 days/week)",
-  active: "Active (6–7 days/week)",
-  very_active: "Very Active (Athlete)",
-};
-
-const goalLabels: Record<string, string> = {
-  bulk: "Bulk (Build Muscle)",
-  cut: "Cut (Lose Fat)",
-};
-
-const goalPriorityLabels: Record<string, string> = {
-  aggressive: "Aggressive",
-  balanced: "Balanced",
-  conservative: "Conservative",
-};
+const activityLevelLabels = Object.fromEntries(ACTIVITY_LEVELS.map((o) => [o.value, o.label]));
+const goalLabels = Object.fromEntries(GOAL_OPTIONS.map((o) => [o.value, o.label]));
+const goalPriorityLabels = Object.fromEntries(GOAL_PRIORITY_OPTIONS.map((o) => [o.value, o.label]));
 
 interface UserProfileCardProps {
   profile: DBProfile | null;
@@ -115,8 +107,8 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
       );
 
       setIsEditing(false);
-    } catch {
-      setSaveError("An error occurred. Please try again.");
+    } catch (err) {
+      setSaveError(getErrorMessage(err));
     } finally {
       setIsSaving(false);
     }
@@ -211,8 +203,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 className={inputClass}
               >
                 <option value="">Select…</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
+                {GENDER_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -225,11 +218,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
               className={inputClass}
             >
               <option value="">Select…</option>
-              <option value="sedentary">Sedentary</option>
-              <option value="light">Light (1–3 days/week)</option>
-              <option value="moderate">Moderate (3–5 days/week)</option>
-              <option value="active">Active (6–7 days/week)</option>
-              <option value="very_active">Very Active (Athlete)</option>
+              {ACTIVITY_LEVELS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
             </select>
           </div>
 
@@ -242,8 +233,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 className={inputClass}
               >
                 <option value="">Select…</option>
-                <option value="bulk">Bulk</option>
-                <option value="cut">Cut</option>
+                {GOAL_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -254,9 +246,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 className={inputClass}
               >
                 <option value="">Select…</option>
-                <option value="aggressive">Aggressive</option>
-                <option value="balanced">Balanced</option>
-                <option value="conservative">Conservative</option>
+                {GOAL_PRIORITY_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
           </div>

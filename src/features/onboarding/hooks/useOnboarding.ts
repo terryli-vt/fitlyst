@@ -5,6 +5,7 @@
 "use client";
 
 import { useState } from "react";
+import { getErrorMessage } from "@/lib/error";
 import { useRouter } from "next/navigation";
 import type { UserProfile, NutritionResults } from "../types";
 import { STEPS } from "../config";
@@ -169,7 +170,7 @@ export function useOnboarding() {
         }
         setShowResults(true);
       } catch (err: unknown) {
-        setSaveError(err instanceof Error ? err.message : "Failed to save profile");
+        setSaveError(getErrorMessage(err, "Failed to save profile"));
       } finally {
         setIsSaving(false);
       }

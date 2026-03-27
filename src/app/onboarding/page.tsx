@@ -15,7 +15,7 @@ import { MealIdeasView } from "@/features/onboarding/components/MealIdeasView";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { status } = useSession();
+  const { status } = useSession(); // to check if user is authenticated
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
@@ -81,7 +81,9 @@ export default function OnboardingPage() {
       <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-lg font-medium text-teal-700">Calculating your nutrition plan...</p>
+          <p className="text-lg font-medium text-teal-700">
+            Calculating your nutrition plan...
+          </p>
         </div>
       </div>
     );
@@ -117,8 +119,12 @@ export default function OnboardingPage() {
           {/* Heading */}
           {!showResults && (
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-gray-900">Tell us more about yourself</h1>
-              <p className="text-sm text-gray-500 mt-1">We&apos;ll use this to personalise your nutrition plan.</p>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Tell us more about yourself
+              </h1>
+              <p className="text-sm text-gray-500 mt-1">
+                We&apos;ll use this to personalise your nutrition plan.
+              </p>
             </div>
           )}
 

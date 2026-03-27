@@ -1,28 +1,14 @@
 import type { UserProfile, NutritionResults } from "../types";
+import { heightToCm, weightToKg } from "@/lib/units";
+import { ACTIVITY_LEVELS } from "../config";
 
 /**
  * Calculate nutrition recommendations
  */
 export function calculateNutrition(profile: UserProfile): NutritionResults {
   // Convert all values to metric for calculation
-  let heightInCm: number;
-  let weightInKg: number;
-
-  // Convert height to cm
-  if (profile.height.unit === "ft") {
-    const feet = parseFloat(profile.height.value) || 0;
-    const inches = parseFloat(profile.height.inches || "0") || 0;
-    heightInCm = feet * 30.48 + inches * 2.54;
-  } else {
-    heightInCm = parseFloat(profile.height.value) || 0;
-  }
-
-  // Convert weight to kg
-  if (profile.weight.unit === "lb") {
-    weightInKg = (parseFloat(profile.weight.value) || 0) * 0.453592;
-  } else {
-    weightInKg = parseFloat(profile.weight.value) || 0;
-  }
+  const heightInCm = heightToCm(profile.height.value, profile.height.unit, profile.height.inches);
+  const weightInKg = weightToKg(profile.weight.value, profile.weight.unit);
 
   const age = parseFloat(profile.age) || 0;
 
@@ -39,19 +25,9 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
 
   // TDEE (Total Daily Energy Expenditure) calculation
   // TDEE = BMR × Activity Multiplier
-  // Activity multipliers based on activity level:
-  // - Sedentary: 1.2
-  // - Training 1–3 days/week: 1.375
-  // - Training 3–5 days/week: 1.55
-  // - Training 6–7 days/week: 1.725
-  // - Very physical job / athlete: 1.9
-  const activityMultipliers: Record<string, number> = {
-    sedentary: 1.2,
-    light: 1.375,
-    moderate: 1.55,
-    active: 1.725,
-    very_active: 1.9,
-  };
+  const activityMultipliers = Object.fromEntries(
+    ACTIVITY_LEVELS.map((l) => [l.value, l.multiplier]),
+  );
 
   // Default to sedentary (1.2) if activity level is invalid or empty
   // This is a safety fallback, though validation should prevent this in normal flow
@@ -108,10 +84,18 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
   const fatGrams = Math.round(weightInKg * 0.8);
   const fatCalories = fatGrams * 9; // Fat = 9 kcal per gram
 
-  // Carbs: fill remaining calories
-  // Carbs = 4 kcal per gram
+  // Minimum safe calorie floor to avoid recommending dangerously low intake.
+  // Below these thresholds the body enters starvation mode and muscle loss accelerates.
+  // 1200 kcal for females, 1500 kcal for males are widely accepted clinical minimums.
+  const minCalories = profile.gender === "female" ? 1200 : 1500;
+  dailyCalories = Math.max(dailyCalories, minCalories);
+
+  // Carbs: fill remaining calories after protein and fat are accounted for.
+  // Carbs = 4 kcal per gram.
+  // Clamped to 0 in edge cases where protein + fat already meet or exceed the calorie
+  // target (e.g. very light bodyweight + aggressive cut).
   const remainingCalories = dailyCalories - proteinCalories - fatCalories;
-  const carbsGrams = Math.round(remainingCalories / 4);
+  const carbsGrams = Math.max(0, Math.round(remainingCalories / 4));
 
   return {
     calories: dailyCalories,

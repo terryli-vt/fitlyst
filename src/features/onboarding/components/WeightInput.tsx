@@ -1,4 +1,5 @@
 import type { UserProfile } from "../types";
+import { LB_PER_KG, KG_PER_LB } from "@/lib/units";
 
 interface WeightInputProps {
   value: UserProfile["weight"];
@@ -29,10 +30,10 @@ export function WeightInput({
       let convertedValue: number;
       if (unit === "kg") {
         // Convert kg to lb (1 kg = 2.20462 lb)
-        convertedValue = Math.round(currentValue * 2.20462 * 10) / 10;
+        convertedValue = Math.round(currentValue * LB_PER_KG * 10) / 10;
       } else {
         // Convert lb to kg (1 lb = 0.453592 kg)
-        convertedValue = Math.round(currentValue * 0.453592 * 10) / 10;
+        convertedValue = Math.round(currentValue * KG_PER_LB * 10) / 10;
       }
       onChange({
         unit: newUnit,

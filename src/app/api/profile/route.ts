@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { heightToCm, weightToKg } from "@/lib/units";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
@@ -8,6 +9,17 @@ import type {
   NutritionResults,
 } from "@/features/onboarding/types";
 import { calculateNutrition } from "@/features/onboarding/utils/calculateNutrition";
+import {
+  GENDER_OPTIONS,
+  ACTIVITY_LEVELS,
+  GOAL_OPTIONS,
+  GOAL_PRIORITY_OPTIONS,
+} from "@/features/onboarding/config";
+
+const VALID_GENDERS: string[] = GENDER_OPTIONS.map((o) => o.value);
+const VALID_ACTIVITY_LEVELS: string[] = ACTIVITY_LEVELS.map((o) => o.value);
+const VALID_GOALS: string[] = GOAL_OPTIONS.map((o) => o.value);
+const VALID_GOAL_PRIORITIES: string[] = GOAL_PRIORITY_OPTIONS.map((o) => o.value);
 
 /**
  * GET /api/profile
@@ -72,65 +84,18 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate enum fields
-  const validGenders = ["male", "female"] as const;
-  const validActivityLevels = [
-    "sedentary",
-    "light",
-    "moderate",
-    "active",
-    "very_active",
-  ] as const;
-  const validGoals = ["bulk", "cut"] as const;
-  const validGoalPriorities = [
-    "aggressive",
-    "balanced",
-    "conservative",
-  ] as const;
-
-  if (!validGenders.includes(profile.gender as (typeof validGenders)[number])) {
+  if (!VALID_GENDERS.includes(profile.gender))
     return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-  }
-  if (
-    !validActivityLevels.includes(
-      profile.activityLevel as (typeof validActivityLevels)[number],
-    )
-  ) {
-    return NextResponse.json(
-      { error: "Invalid activity level" },
-      { status: 400 },
-    );
-  }
-  if (!validGoals.includes(profile.goal as (typeof validGoals)[number])) {
+  if (!VALID_ACTIVITY_LEVELS.includes(profile.activityLevel))
+    return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
+  if (!VALID_GOALS.includes(profile.goal))
     return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
-  }
-  if (
-    !validGoalPriorities.includes(
-      profile.goalPriority as (typeof validGoalPriorities)[number],
-    )
-  ) {
-    return NextResponse.json(
-      { error: "Invalid goal priority" },
-      { status: 400 },
-    );
-  }
+  if (!VALID_GOAL_PRIORITIES.includes(profile.goalPriority))
+    return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
 
-  // Convert height to cm
-  let heightCm: number;
-  if (profile.height.unit === "ft") {
-    const feet = parseFloat(profile.height.value) || 0;
-    const inches = parseFloat(profile.height.inches ?? "0") || 0;
-    heightCm = feet * 30.48 + inches * 2.54;
-  } else {
-    heightCm = parseFloat(profile.height.value);
-  }
-
-  // Convert weight to kg
-  let weightKg: number;
-  if (profile.weight.unit === "lb") {
-    weightKg = parseFloat(profile.weight.value) / 2.20462;
-  } else {
-    weightKg = parseFloat(profile.weight.value);
-  }
+  // Convert height and weight to metric
+  const heightCm = heightToCm(profile.height.value, profile.height.unit, profile.height.inches ?? undefined);
+  const weightKg = weightToKg(profile.weight.value, profile.weight.unit);
 
   // Validate converted numeric values
   const age = parseInt(profile.age);
@@ -234,35 +199,14 @@ export async function PATCH(request: NextRequest) {
     body;
 
   // Validate enum fields
-  const validGenders = ["male", "female"] as const;
-  const validActivityLevels = [
-    "sedentary",
-    "light",
-    "moderate",
-    "active",
-    "very_active",
-  ] as const;
-  const validGoals = ["bulk", "cut"] as const;
-  const validGoalPriorities = [
-    "aggressive",
-    "balanced",
-    "conservative",
-  ] as const;
-
-  if (!validGenders.includes(gender))
+  if (!VALID_GENDERS.includes(gender))
     return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-  if (!validActivityLevels.includes(activityLevel))
-    return NextResponse.json(
-      { error: "Invalid activity level" },
-      { status: 400 },
-    );
-  if (!validGoals.includes(goal))
+  if (!VALID_ACTIVITY_LEVELS.includes(activityLevel))
+    return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
+  if (!VALID_GOALS.includes(goal))
     return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
-  if (!validGoalPriorities.includes(goalPriority))
-    return NextResponse.json(
-      { error: "Invalid goal priority" },
-      { status: 400 },
-    );
+  if (!VALID_GOAL_PRIORITIES.includes(goalPriority))
+    return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
 
   const hCm = parseFloat(heightCm);
   const wKg = parseFloat(weightKg);
