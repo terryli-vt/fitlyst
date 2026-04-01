@@ -11,6 +11,7 @@ import {
   GOAL_OPTIONS,
   GOAL_PRIORITY_OPTIONS,
 } from "@/features/onboarding/config";
+import { CM_PER_INCH, LB_PER_KG, KG_PER_LB } from "@/lib/units";
 
 const activityLevelLabels = Object.fromEntries(ACTIVITY_LEVELS.map((o) => [o.value, o.label]));
 const goalLabels = Object.fromEntries(GOAL_OPTIONS.map((o) => [o.value, o.label]));
@@ -29,9 +30,14 @@ const labelClass =
 
 export default function UserProfileCard({ profile, onSaved, editDisabled = false }: UserProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
   const [editForm, setEditForm] = useState({
     heightCm: profile?.height?.toString() ?? "",
+    heightFt: "",
+    heightIn: "",
     weightKg: profile?.weight?.toString() ?? "",
+    weightLb: "",
     age: profile?.age?.toString() ?? "",
     gender: profile?.gender ?? "",
     activityLevel: profile?.activityLevel ?? "",
@@ -42,9 +48,14 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const handleEdit = () => {
+    setHeightUnit("cm");
+    setWeightUnit("kg");
     setEditForm({
       heightCm: profile?.height?.toString() ?? "",
+      heightFt: "",
+      heightIn: "",
       weightKg: profile?.weight?.toString() ?? "",
+      weightLb: "",
       age: profile?.age?.toString() ?? "",
       gender: profile?.gender ?? "",
       activityLevel: profile?.activityLevel ?? "",
@@ -60,10 +71,65 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
     setIsEditing(false);
   };
 
+  const handleHeightUnitToggle = () => {
+    const newUnit = heightUnit === "cm" ? "ft" : "cm";
+    if (heightUnit === "cm") {
+      const cm = parseFloat(editForm.heightCm);
+      if (cm > 0) {
+        const totalInches = cm / CM_PER_INCH;
+        const ft = Math.floor(totalInches / 12);
+        const inches = Math.round(totalInches % 12);
+        setEditForm((f) => ({ ...f, heightFt: ft.toString(), heightIn: inches.toString() }));
+      }
+    } else {
+      const ft = parseFloat(editForm.heightFt) || 0;
+      const inches = parseFloat(editForm.heightIn) || 0;
+      if (ft > 0 || inches > 0) {
+        const cm = Math.round((ft * 12 + inches) * CM_PER_INCH);
+        setEditForm((f) => ({ ...f, heightCm: cm.toString() }));
+      }
+    }
+    setHeightUnit(newUnit);
+  };
+
+  const handleWeightUnitToggle = () => {
+    const newUnit = weightUnit === "kg" ? "lb" : "kg";
+    if (weightUnit === "kg") {
+      const kg = parseFloat(editForm.weightKg);
+      if (kg > 0) {
+        const lb = Math.round(kg * LB_PER_KG * 10) / 10;
+        setEditForm((f) => ({ ...f, weightLb: lb.toString() }));
+      }
+    } else {
+      const lb = parseFloat(editForm.weightLb);
+      if (lb > 0) {
+        const kg = Math.round(lb * KG_PER_LB * 10) / 10;
+        setEditForm((f) => ({ ...f, weightKg: kg.toString() }));
+      }
+    }
+    setWeightUnit(newUnit);
+  };
+
   const handleSave = async () => {
-    const { heightCm, weightKg, age, gender, activityLevel, goal } = editForm;
+    const { age, gender, activityLevel, goal } = editForm;
     const goalPriority = goal === "maintain" ? "balanced" : editForm.goalPriority;
-    if (!heightCm || !weightKg || !age || !gender || !activityLevel || !goal || !goalPriority) {
+
+    // Resolve height to cm regardless of active unit
+    const resolvedHeightCm =
+      heightUnit === "cm"
+        ? parseFloat(editForm.heightCm)
+        : Math.round(
+            (parseFloat(editForm.heightFt || "0") * 12 + parseFloat(editForm.heightIn || "0")) *
+              CM_PER_INCH,
+          );
+
+    // Resolve weight to kg regardless of active unit
+    const resolvedWeightKg =
+      weightUnit === "kg"
+        ? parseFloat(editForm.weightKg)
+        : Math.round(parseFloat(editForm.weightLb || "0") * KG_PER_LB * 10) / 10;
+
+    if (!resolvedHeightCm || !resolvedWeightKg || !age || !gender || !activityLevel || !goal || !goalPriority) {
       setSaveError("All fields are required.");
       return;
     }
@@ -76,8 +142,8 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          heightCm: parseFloat(heightCm),
-          weightKg: parseFloat(weightKg),
+          heightCm: resolvedHeightCm,
+          weightKg: resolvedWeightKg,
           age: parseInt(age),
           gender,
           activityLevel,
@@ -96,8 +162,8 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
 
       onSaved(
         {
-          height: parseFloat(heightCm),
-          weight: parseFloat(weightKg),
+          height: resolvedHeightCm,
+          weight: resolvedWeightKg,
           age: parseInt(age),
           gender,
           activityLevel,
@@ -168,24 +234,66 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
       {isEditing && (
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Height (cm)</label>
-              <input
-                type="number"
-                value={editForm.heightCm}
-                onChange={(e) => setEditForm((f) => ({ ...f, heightCm: e.target.value }))}
-                className={inputClass}
-                placeholder="175"
-              />
+            {/* Height */}
+            <div className={heightUnit === "ft" ? "col-span-2" : ""}>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelClass} style={{ marginBottom: 0 }}>Height</label>
+                <UnitToggle
+                  options={["cm", "ft"]}
+                  active={heightUnit}
+                  onToggle={handleHeightUnitToggle}
+                />
+              </div>
+              {heightUnit === "cm" ? (
+                <input
+                  type="number"
+                  value={editForm.heightCm}
+                  onChange={(e) => setEditForm((f) => ({ ...f, heightCm: e.target.value }))}
+                  className={inputClass}
+                  placeholder="175"
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <input
+                    type="number"
+                    value={editForm.heightFt}
+                    onChange={(e) => setEditForm((f) => ({ ...f, heightFt: e.target.value }))}
+                    className={inputClass}
+                    placeholder="ft"
+                    min="0"
+                  />
+                  <input
+                    type="number"
+                    value={editForm.heightIn}
+                    onChange={(e) => setEditForm((f) => ({ ...f, heightIn: e.target.value }))}
+                    className={inputClass}
+                    placeholder="in"
+                    min="0"
+                    max="11"
+                  />
+                </div>
+              )}
             </div>
-            <div>
-              <label className={labelClass}>Weight (kg)</label>
+            {/* Weight */}
+            <div className={heightUnit === "ft" ? "col-span-2" : ""}>
+              <div className="flex items-center justify-between mb-1">
+                <label className={labelClass} style={{ marginBottom: 0 }}>Weight</label>
+                <UnitToggle
+                  options={["kg", "lb"]}
+                  active={weightUnit}
+                  onToggle={handleWeightUnitToggle}
+                />
+              </div>
               <input
                 type="number"
-                value={editForm.weightKg}
-                onChange={(e) => setEditForm((f) => ({ ...f, weightKg: e.target.value }))}
+                value={weightUnit === "kg" ? editForm.weightKg : editForm.weightLb}
+                onChange={(e) =>
+                  weightUnit === "kg"
+                    ? setEditForm((f) => ({ ...f, weightKg: e.target.value }))
+                    : setEditForm((f) => ({ ...f, weightLb: e.target.value }))
+                }
                 className={inputClass}
-                placeholder="70"
+                placeholder={weightUnit === "kg" ? "70" : "154"}
               />
             </div>
             <div>
@@ -289,6 +397,35 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function UnitToggle({
+  options,
+  active,
+  onToggle,
+}: {
+  options: [string, string];
+  active: string;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 text-xs">
+      {options.map((opt) => (
+        <button
+          key={opt}
+          type="button"
+          onClick={() => opt !== active && onToggle()}
+          className={`px-2 py-0.5 transition-colors ${
+            opt === active
+              ? "bg-teal-600 text-white"
+              : "bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600"
+          }`}
+        >
+          {opt}
+        </button>
+      ))}
     </div>
   );
 }
