@@ -71,6 +71,42 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 
 ---
 
+### 6. 跨站请求伪造 (CSRF, Cross-Site Request Forgery)
+
+**攻击原理：**
+用户已登录 fitlyst.com，浏览器存着他的 cookie。此时他访问了恶意网站，该网站偷偷向 fitlyst.com 发送请求，浏览器会自动带上 cookie，服务器无法区分是用户主动操作还是伪造请求。
+
+**NextAuth v5 的内置防御：**
+NextAuth v5 对自己的认证路由（`/api/auth/*`）有内置 CSRF token 保护。此外，NextAuth 默认将 session cookie 设置为 `SameSite=Lax`，这意味着跨站的 POST 请求不会自动携带 cookie，大多数 CSRF 场景已被阻断。
+
+**注意：** `SameSite=Lax` 不覆盖自定义 API 路由（如 `/api/profile`）。对于高敏感操作，必要时需额外校验 CSRF token。
+
+**对 Fitlyst 的审查要点：**
+- 确认 NextAuth 的 `SameSite=Lax` 设置确实生效
+- 确认没有路由使用 `SameSite=None`（会完全放开跨站 cookie）
+- 高敏感操作（如删除账户）是否需要额外的 CSRF token 校验
+
+---
+
+### 7. LLM 输出注入 (Prompt Injection → XSS) → Sanitize
+
+**攻击原理：**
+AI 的输出和用户输入一样不可信。攻击者可以在输入里夹带指令操控 AI 的回复，使其包含 `<script>` 等恶意内容。如果代码用 `dangerouslySetInnerHTML` 直接渲染 AI 输出，脚本就会执行。
+
+**防御：** React 默认会转义字符串，通常是安全的。但凡用到 `dangerouslySetInnerHTML`，必须先用 DOMPurify 过滤：
+
+```ts
+import DOMPurify from 'dompurify'
+
+// 危险
+<div dangerouslySetInnerHTML={{ __html: aiContent }} />
+
+// 安全
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(aiContent) }} />
+```
+
+---
+
 ## 在 Next.js 里怎么加
 
 在 `next.config.ts` 里统一配置，通过 `headers()` 函数覆盖所有路由：
@@ -107,12 +143,14 @@ async headers() {
 
 ## 总结
 
-| 响应头 | 防御目标 |
+| 防御手段 | 防御目标 |
 |---|---|
 | `X-Frame-Options` | 点击劫持 |
 | `X-Content-Type-Options` | MIME 类型嗅探 |
 | `Content-Security-Policy` | XSS 跨站脚本攻击 |
 | `Referrer-Policy` | URL 敏感信息泄露 |
 | `Permissions-Policy` | 摄像头/麦克风/定位等 API 滥用 |
+| `SameSite=Lax` cookie | CSRF 跨站请求伪造 |
+| Sanitize LLM 输出 | Prompt Injection → XSS |
 
 这些响应头是低成本、高价值的防御层——不需要改业务逻辑，只需几行配置，就能挡住多类常见的 Web 攻击。

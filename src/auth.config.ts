@@ -12,6 +12,19 @@ export const authConfig: NextAuthConfig = {
   session: {
     strategy: "jwt",
   },
+  // Explicitly configure cookie security settings rather than relying on defaults.
+  // sameSite: "lax" blocks cross-site POST requests from carrying the session cookie,
+  // which is the primary CSRF defence for this app.
+  // secure: true in production ensures the cookie is only sent over HTTPS.
+  cookies: {
+    sessionToken: {
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   callbacks: {
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
