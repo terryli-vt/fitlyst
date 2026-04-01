@@ -9,13 +9,13 @@
 ### Security
 - [x] Add Content Security Policy (CSP) and other security headers (X-Frame-Options, X-Content-Type-Options, etc.) via `next.config.ts` or middleware
   > 添加内容安全策略和其他安全响应头，防止点击劫持和 MIME 类型嗅探等攻击。
-- [ ] Sanitize LLM-generated meal content before rendering to prevent XSS
-  > AI 生成的餐食内容在渲染前需经过过滤，防止 XSS 跨站脚本攻击。
-- [ ] Create a `.env.example` file documenting all required environment variables
+- [x] Sanitize LLM-generated meal content before rendering to prevent XSS
+  > AI 生成的餐食内容在渲染前需经过过滤，防止 XSS 跨站脚本攻击。已确认：代码中未使用 `dangerouslySetInnerHTML`，React 默认转义已提供保护。
+- [x] Create a `.env.example` file documenting all required environment variables
   > 创建 `.env.example` 文件，列出所有必需的环境变量及示例值，方便团队成员配置。
-- [ ] Add unified input validation middleware for all API routes instead of ad-hoc per-route validation
+- [x] Add unified input validation middleware for all API routes instead of ad-hoc per-route validation
   > 用统一的中间件统一校验所有 API 路由的输入，替代各路由分散的手动校验逻辑。
-- [ ] Review and harden CSRF protection with NextAuth v5
+- [x] Review and harden CSRF protection with NextAuth v5
   > 检查并加固 NextAuth v5 的 CSRF 防护配置，确保表单提交不被跨站伪造。
 
 ### Stability

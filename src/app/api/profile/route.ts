@@ -4,22 +4,9 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { userProfiles, nutritionResults } from "@/db/schema";
-import type {
-  UserProfile,
-  NutritionResults,
-} from "@/features/onboarding/types";
+import type { UserProfile } from "@/features/onboarding/types";
 import { calculateNutrition } from "@/features/onboarding/utils/calculateNutrition";
-import {
-  GENDER_OPTIONS,
-  ACTIVITY_LEVELS,
-  GOAL_OPTIONS,
-  GOAL_PRIORITY_OPTIONS,
-} from "@/features/onboarding/config";
-
-const VALID_GENDERS: string[] = GENDER_OPTIONS.map((o) => o.value);
-const VALID_ACTIVITY_LEVELS: string[] = ACTIVITY_LEVELS.map((o) => o.value);
-const VALID_GOALS: string[] = GOAL_OPTIONS.map((o) => o.value);
-const VALID_GOAL_PRIORITIES: string[] = GOAL_PRIORITY_OPTIONS.map((o) => o.value);
+import { postProfileSchema, patchProfileSchema } from "@/lib/schemas";
 
 /**
  * GET /api/profile
@@ -71,34 +58,18 @@ export async function POST(request: NextRequest) {
   const userId = session.user.id;
 
   const body = await request.json();
-  const {
-    profile,
-    nutrition,
-  }: { profile: UserProfile; nutrition: NutritionResults } = body;
-
-  if (!profile || !nutrition) {
-    return NextResponse.json(
-      { error: "Missing profile or nutrition data" },
-      { status: 400 },
-    );
+  const parsed = postProfileSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Validate enum fields
-  if (!VALID_GENDERS.includes(profile.gender))
-    return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-  if (!VALID_ACTIVITY_LEVELS.includes(profile.activityLevel))
-    return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
-  if (!VALID_GOALS.includes(profile.goal))
-    return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
-  if (!VALID_GOAL_PRIORITIES.includes(profile.goalPriority))
-    return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
+  const { profile, nutrition } = parsed.data as { profile: UserProfile; nutrition: typeof parsed.data.nutrition };
 
   // Convert height and weight to metric
   const heightCm = heightToCm(profile.height.value, profile.height.unit, profile.height.inches ?? undefined);
   const weightKg = weightToKg(profile.weight.value, profile.weight.unit);
-
-  // Validate converted numeric values
   const age = parseInt(profile.age);
+
   if (isNaN(heightCm) || heightCm <= 0 || heightCm > 300) {
     return NextResponse.json({ error: "Invalid height" }, { status: 400 });
   }
@@ -195,29 +166,12 @@ export async function PATCH(request: NextRequest) {
 
   const userId = session.user.id;
   const body = await request.json();
-  const { heightCm, weightKg, age, gender, activityLevel, goal, goalPriority } =
-    body;
+  const parsed = patchProfileSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
 
-  // Validate enum fields
-  if (!VALID_GENDERS.includes(gender))
-    return NextResponse.json({ error: "Invalid gender" }, { status: 400 });
-  if (!VALID_ACTIVITY_LEVELS.includes(activityLevel))
-    return NextResponse.json({ error: "Invalid activity level" }, { status: 400 });
-  if (!VALID_GOALS.includes(goal))
-    return NextResponse.json({ error: "Invalid goal" }, { status: 400 });
-  if (!VALID_GOAL_PRIORITIES.includes(goalPriority))
-    return NextResponse.json({ error: "Invalid goal priority" }, { status: 400 });
-
-  const hCm = parseFloat(heightCm);
-  const wKg = parseFloat(weightKg);
-  const ageNum = parseInt(age);
-
-  if (isNaN(hCm) || hCm <= 0 || hCm > 300)
-    return NextResponse.json({ error: "Invalid height" }, { status: 400 });
-  if (isNaN(wKg) || wKg <= 0 || wKg > 500)
-    return NextResponse.json({ error: "Invalid weight" }, { status: 400 });
-  if (isNaN(ageNum) || ageNum <= 0 || ageNum > 120)
-    return NextResponse.json({ error: "Invalid age" }, { status: 400 });
+  const { heightCm: hCm, weightKg: wKg, age: ageNum, gender, activityLevel, goal, goalPriority } = parsed.data;
 
   // Build a UserProfile to pass to calculateNutrition (values already in metric)
   const fakeProfile: UserProfile = {

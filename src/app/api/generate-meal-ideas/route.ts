@@ -23,6 +23,7 @@ import { mealIdeas as mealIdeasTable } from "@/db/schema";
 import { openai } from "@/lib/openai";
 import type { NutritionResults, MealIdea } from "@/features/onboarding/types";
 import { getTodayCount, getTodayString, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
+import { generateMealIdeasSchema } from "@/lib/schemas";
 
 /**
  * Construct the prompt for the LLM
@@ -154,17 +155,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
+    // Parse and validate request body
     const body = await request.json();
-    const nutrition: NutritionResults = body.nutrition;
-
-    // Validate required fields
-    if (!nutrition || typeof nutrition.calories !== "number" || typeof nutrition.protein !== "number") {
+    const parsed = generateMealIdeasSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid nutrition data provided" },
+        { error: parsed.error.flatten() },
         { status: 400 }
       );
     }
+    const nutrition: NutritionResults = parsed.data.nutrition;
 
     // Construct prompt
     const prompt = constructPrompt(nutrition);
