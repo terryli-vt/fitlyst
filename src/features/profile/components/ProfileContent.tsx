@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import Navbar from "@/components/Navbar";
 import ProfileHeader from "./ProfileHeader";
 import UserProfileCard from "./UserProfileCard";
 import NutritionCard from "./NutritionCard";
@@ -35,11 +36,13 @@ export default function ProfileContent({
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-teal-50 to-white py-10 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white dark:from-gray-900 dark:to-gray-950 flex flex-col">
+      <Navbar showLogin={false} />
+      <div className="flex-1 py-10 px-4">
       <div className="w-[90%] max-w-7xl mx-auto">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-teal-600 hover:text-teal-800 text-sm font-medium mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-teal-600 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 text-sm font-medium mb-8 transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
@@ -60,6 +63,7 @@ export default function ProfileContent({
             onGeneratingChange={setIsGeneratingMeals}
           />
         )}
+      </div>
       </div>
     </div>
   );

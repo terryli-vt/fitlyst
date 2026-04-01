@@ -3,23 +3,23 @@ import { Sparkles } from "lucide-react";
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-teal-50 to-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-teal-50 to-white dark:from-gray-900 dark:to-gray-950 px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-teal-700 mb-2">Fitlyst</h1>
-          <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2 text-sm font-medium text-green-700">
+          <h1 className="text-4xl font-bold text-teal-700 dark:text-teal-400 mb-2">Fitlyst</h1>
+          <div className="inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 px-4 py-2 text-sm font-medium text-green-700 dark:text-green-400">
             <Sparkles className="h-4 w-4" />
             <span>AI-Powered Nutrition</span>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 text-center">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-8">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2 text-center">
             Welcome back
           </h2>
-          <p className="text-sm text-gray-500 text-center mb-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-6">
             Sign in to continue your fitness journey
           </p>
 
@@ -32,14 +32,12 @@ export default function LoginPage() {
           >
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-4 rounded-xl transition-colors duration-200 shadow-sm"
+              className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium py-3 px-4 rounded-xl transition-colors duration-200 shadow-sm"
             >
               <GoogleIcon />
               Continue with Google
             </button>
           </form>
-
-          {/* Future providers go here */}
         </div>
       </div>
     </div>

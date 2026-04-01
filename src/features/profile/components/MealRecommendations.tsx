@@ -61,11 +61,11 @@ export default function MealRecommendations({
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
-        <h2 className="text-lg font-bold text-gray-900">Meal Recommendations</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Meal Recommendations</h2>
         <div className="flex items-center gap-3 self-end sm:self-auto">
-          <span className="text-xs text-gray-400">{remainingGenerations} left today</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">{remainingGenerations} left today</span>
           <button
             onClick={handleGenerate}
             disabled={isGenerating || remainingGenerations === 0}
@@ -83,9 +83,9 @@ export default function MealRecommendations({
         <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
           <div className="flex items-center gap-3">
             <RefreshCw className="h-5 w-5 animate-spin" />
-            <span className="text-sm">Generating personalized meal ideas…</span>
+            <span className="text-sm dark:text-gray-400">Generating personalized meal ideas…</span>
           </div>
-          <span className="text-xs text-gray-400">This may take 10–30 seconds, please be patient.</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">This may take 10–30 seconds, please be patient.</span>
         </div>
       )}
 
@@ -103,7 +103,7 @@ export default function MealRecommendations({
       )}
 
       {!isGenerating && !meals && (
-        <p className="text-gray-400 text-sm text-center py-10">
+        <p className="text-gray-400 dark:text-gray-500 text-sm text-center py-10">
           Click &quot;Generate&quot; to create personalized meal recommendations based on your
           nutrition plan.
         </p>

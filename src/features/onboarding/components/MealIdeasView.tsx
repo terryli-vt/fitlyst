@@ -1,6 +1,7 @@
 "use client";
 
 import MealCard from "@/components/MealCard";
+import Navbar from "@/components/Navbar";
 import type { MealIdea } from "../types";
 
 interface MealIdeasViewProps {
@@ -14,20 +15,20 @@ interface MealIdeasViewProps {
  */
 export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white flex flex-col">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-b from-teal-50 to-white dark:from-gray-900 dark:to-gray-950 flex flex-col">
+      <Navbar showLogin={false} />
       <header className="pt-8 px-4">
         <div className="max-w-4xl mx-auto">
           {onBack && (
             <button
               onClick={onBack}
-              className="text-gray-600 hover:text-gray-900 transition-colors mb-4"
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition-colors mb-4"
             >
               ← Back to Results
             </button>
           )}
-          <h1 className="text-3xl font-bold text-teal-700 mb-2">Your Meal Ideas</h1>
-          <p className="text-gray-600">Personalized meal suggestions based on your nutrition plan</p>
+          <h1 className="text-3xl font-bold text-teal-700 dark:text-teal-400 mb-2">Your Meal Ideas</h1>
+          <p className="text-gray-600 dark:text-gray-400">Personalized meal suggestions based on your nutrition plan</p>
         </div>
       </header>
 
@@ -39,7 +40,7 @@ export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
               <MealCard key={index} meal={meal} />
             ))}
           </div>
-          <p className="text-xs text-gray-500 italic mt-6 text-center">
+          <p className="text-xs text-gray-500 dark:text-gray-500 italic mt-6 text-center">
             Meal ideas are AI-generated and not medical advice.
           </p>
         </div>

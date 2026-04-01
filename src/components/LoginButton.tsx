@@ -11,7 +11,7 @@ export default function LoginButton() {
     return (
       <Link
         href="/profile"
-        className="inline-block border border-teal-600 text-teal-700 hover:bg-teal-600 hover:text-white font-medium py-1.5 px-5 rounded-full text-sm transition-colors duration-200"
+        className="inline-block border border-teal-600 dark:border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-600 dark:hover:bg-teal-700 hover:text-white font-medium py-1.5 px-5 rounded-full text-sm transition-colors duration-200"
       >
         Hi, {firstName}
       </Link>
@@ -21,7 +21,7 @@ export default function LoginButton() {
   return (
     <Link
       href="/login"
-      className="inline-block border border-teal-600 text-teal-700 hover:bg-teal-600 hover:text-white font-medium py-1.5 px-5 rounded-full text-sm transition-colors duration-200"
+      className="inline-block border border-teal-600 dark:border-teal-500 text-teal-700 dark:text-teal-400 hover:bg-teal-600 dark:hover:bg-teal-700 hover:text-white font-medium py-1.5 px-5 rounded-full text-sm transition-colors duration-200"
     >
       Login
     </Link>

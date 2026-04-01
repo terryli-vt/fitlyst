@@ -35,13 +35,6 @@ interface StepContentProps {
   onWeightUnitChange: (unit: "kg" | "lb") => void;
 }
 
-/**
- * StepContent Component
- *
- * Renders the appropriate input for each onboarding step.
- * Extracted from the renderStepContent function in OnboardingPage so the page
- * stays thin and each step's UI lives in one dedicated place.
- */
 export function StepContent({
   step,
   profile,
@@ -53,7 +46,7 @@ export function StepContent({
 }: StepContentProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">{step.question}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{step.question}</h2>
 
       {step.type === "height" && (
         <HeightInput
@@ -75,7 +68,7 @@ export function StepContent({
 
       {step.type === "number" && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Age
           </label>
           <input
@@ -83,7 +76,7 @@ export function StepContent({
             value={profile.age}
             onChange={(e) => onAnswerChange("age", e.target.value)}
             placeholder="Enter your age"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-lg"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent text-lg"
             min="1"
             max="120"
           />
@@ -99,8 +92,8 @@ export function StepContent({
               onClick={() => onAnswerChange("gender", option.value)}
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
                 profile.gender === option.value
-                  ? "border-teal-500 bg-teal-50 text-teal-700"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                  ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                  : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-teal-300 dark:hover:border-teal-500"
               }`}
             >
               {option.label}
@@ -118,8 +111,8 @@ export function StepContent({
               onClick={() => onAnswerChange("activityLevel", level.value)}
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
                 profile.activityLevel === level.value
-                  ? "border-teal-500 bg-teal-50 text-teal-700"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                  ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                  : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-teal-300 dark:hover:border-teal-500"
               }`}
             >
               {level.label}
@@ -137,12 +130,12 @@ export function StepContent({
               onClick={() => onAnswerChange("goal", option.value)}
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
                 profile.goal === option.value
-                  ? "border-teal-500 bg-teal-50 text-teal-700"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                  ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                  : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-teal-300 dark:hover:border-teal-500"
               }`}
             >
               <div className="font-medium">{option.label}</div>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {option.description}
               </div>
             </button>
@@ -159,12 +152,12 @@ export function StepContent({
               onClick={() => onAnswerChange("goalPriority", option.value)}
               className={`w-full text-left px-4 py-3 rounded-lg border-2 transition-colors ${
                 profile.goalPriority === option.value
-                  ? "border-teal-500 bg-teal-50 text-teal-700"
-                  : "border-gray-200 bg-white text-gray-700 hover:border-teal-300"
+                  ? "border-teal-500 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
+                  : "border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:border-teal-300 dark:hover:border-teal-500"
               }`}
             >
               <div className="font-medium">{option.label}</div>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {option.description}
               </div>
             </button>

@@ -318,6 +318,10 @@ export const authConfig: NextAuthConfig = {
 };
 ```
 
+把配置单独抽出来，是为了让 proxy（请求拦截层）能验证登录状态，但不引入数据库依赖——JWT 验证根本不需要查库，保持轻量且不出 runtime 兼容问题。
+
+auth.config.ts exists so the proxy can verify JWT sessions without pulling in the database adapter — keeping the request guard lightweight and runtime-safe.
+
 ## `src/auth.ts` — 核心配置
 
 ```ts

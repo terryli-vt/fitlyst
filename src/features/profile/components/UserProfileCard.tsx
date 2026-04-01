@@ -23,9 +23,9 @@ interface UserProfileCardProps {
 }
 
 const inputClass =
-  "w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white";
+  "w-full border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 bg-white dark:bg-gray-700";
 const labelClass =
-  "block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1";
+  "block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1";
 
 export default function UserProfileCard({ profile, onSaved, editDisabled = false }: UserProfileCardProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -115,9 +115,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
   };
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-bold text-gray-900">User Profile</h2>
+        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Profile</h2>
         {!isEditing && profile && (
           <button
             onClick={handleEdit}
@@ -152,9 +152,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
 
       {/* No profile yet */}
       {!profile && !isEditing && (
-        <p className="text-gray-400 text-sm">
+        <p className="text-gray-400 dark:text-gray-500 text-sm">
           No profile data yet. Complete{" "}
-          <Link href="/onboarding" className="text-teal-600 hover:underline">
+          <Link href="/onboarding" className="text-teal-600 dark:text-teal-400 hover:underline">
             onboarding
           </Link>{" "}
           to get started.
@@ -276,7 +276,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
             <button
               onClick={handleCancel}
               disabled={isSaving}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 text-sm font-medium px-4 py-2.5 rounded-xl border border-gray-200 hover:border-gray-300 transition-colors"
+              className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 text-sm font-medium px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-colors"
             >
               <X className="h-4 w-4" />
               Cancel
@@ -298,9 +298,9 @@ function ProfileField({
   fullWidth?: boolean;
 }) {
   return (
-    <div className={`bg-gray-50 rounded-xl px-4 py-3 ${fullWidth ? "col-span-2" : ""}`}>
-      <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-0.5">{label}</p>
-      <p className="text-gray-800 font-semibold text-sm">{value}</p>
+    <div className={`bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 ${fullWidth ? "col-span-2" : ""}`}>
+      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide mb-0.5">{label}</p>
+      <p className="text-gray-800 dark:text-gray-100 font-semibold text-sm">{value}</p>
     </div>
   );
 }
