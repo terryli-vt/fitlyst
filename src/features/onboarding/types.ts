@@ -22,7 +22,7 @@ export interface UserProfile {
     | "active"
     | "very_active"
     | "";
-  goal: "bulk" | "cut" | "";
+  goal: "bulk" | "cut" | "maintain" | "";
   goalPriority: "aggressive" | "balanced" | "conservative" | "";
 }
 

@@ -71,17 +71,30 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
 
     dailyCalories = Math.round(tdee - deficit);
   } else {
-    // Default to maintenance (TDEE) if no goal is selected
+    // Maintenance (or unrecognised goal): target exactly TDEE
     dailyCalories = Math.round(tdee);
   }
 
   // Macro distribution based on bodyweight
-  // Protein: 2g per kg bodyweight
-  const proteinGrams = Math.round(weightInKg * 2);
+  // Protein multiplier differs by goal:
+  //   Cut:          2.2g/kg — higher intake preserves lean mass during a caloric deficit
+  //                 (ISSN meta-analysis recommendation for fat-loss phases)
+  //   Bulk/other:   2g/kg  — sufficient to maximise muscle protein synthesis
+  // For overweight/obese users (BMI > 25), protein is based on Ideal Body Weight
+  // (IBW = 22 × height_m²) to avoid overestimating needs for excess body fat,
+  // which does not require the same protein support as lean mass.
+  const ibw = 22 * heightInM * heightInM;
+  const proteinWeightBasis = bmi > 25 ? ibw : weightInKg;
+  const proteinMultiplier = profile.goal === "cut" ? 2.2 : 2;
+  const proteinGrams = Math.round(proteinWeightBasis * proteinMultiplier);
   const proteinCalories = proteinGrams * 4; // Protein = 4 kcal per gram
 
-  // Fat: 0.8g per kg bodyweight
-  const fatGrams = Math.round(weightInKg * 0.8);
+  // Fat: 1g per kg bodyweight (ISSN minimum recommendation).
+  // Same IBW basis as protein when BMI > 25 — keeps fat % within the AMDR 20–35%
+  // range and avoids an inconsistent split where low IBW-protein meets high
+  // actual-weight fat (which pushed fat to 40–50% for obese users).
+  const fatWeightBasis = bmi > 25 ? ibw : weightInKg;
+  const fatGrams = Math.round(fatWeightBasis * 1);
   const fatCalories = fatGrams * 9; // Fat = 9 kcal per gram
 
   // Minimum safe calorie floor to avoid recommending dangerously low intake.
@@ -92,10 +105,18 @@ export function calculateNutrition(profile: UserProfile): NutritionResults {
 
   // Carbs: fill remaining calories after protein and fat are accounted for.
   // Carbs = 4 kcal per gram.
-  // Clamped to 0 in edge cases where protein + fat already meet or exceed the calorie
-  // target (e.g. very light bodyweight + aggressive cut).
+  // A minimum of 100g is enforced to prevent accidentally recommending a ketogenic
+  // diet (typically < 50g). 100g is a widely cited sports-nutrition floor that keeps
+  // the brain adequately fuelled without requiring deliberate keto tracking.
+  // If the floor raises carbs above the calculated value, dailyCalories is updated
+  // to match so that the displayed total always equals protein + fat + carb calories.
+  const MIN_CARBS_GRAMS = 100;
   const remainingCalories = dailyCalories - proteinCalories - fatCalories;
-  const carbsGrams = Math.max(0, Math.round(remainingCalories / 4));
+  const rawCarbsGrams = Math.max(0, Math.round(remainingCalories / 4));
+  const carbsGrams = Math.max(MIN_CARBS_GRAMS, rawCarbsGrams);
+  if (carbsGrams > rawCarbsGrams) {
+    dailyCalories = proteinCalories + fatCalories + carbsGrams * 4;
+  }
 
   return {
     calories: dailyCalories,

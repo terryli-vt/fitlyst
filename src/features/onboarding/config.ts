@@ -77,6 +77,11 @@ export const GOAL_OPTIONS = [
     label: "Cut (Fat Loss)",
     description: "Reduce body fat while maintaining muscle",
   },
+  {
+    value: "maintain",
+    label: "Maintain Weight",
+    description: "Keep current weight and support overall health",
+  },
 ] as const;
 
 // Goal priority options

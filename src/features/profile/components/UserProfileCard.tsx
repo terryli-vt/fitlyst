@@ -61,7 +61,8 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
   };
 
   const handleSave = async () => {
-    const { heightCm, weightKg, age, gender, activityLevel, goal, goalPriority } = editForm;
+    const { heightCm, weightKg, age, gender, activityLevel, goal } = editForm;
+    const goalPriority = goal === "maintain" ? "balanced" : editForm.goalPriority;
     if (!heightCm || !weightKg || !age || !gender || !activityLevel || !goal || !goalPriority) {
       setSaveError("All fields are required.");
       return;
@@ -142,11 +143,13 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
             value={activityLevelLabels[profile.activityLevel] ?? profile.activityLevel}
             fullWidth
           />
-          <ProfileField label="Goal" value={goalLabels[profile.goal] ?? profile.goal} />
-          <ProfileField
-            label="Priority"
-            value={goalPriorityLabels[profile.goalPriority] ?? profile.goalPriority}
-          />
+          <ProfileField label="Goal" value={goalLabels[profile.goal] ?? profile.goal} fullWidth={profile.goal === "maintain"} />
+          {profile.goal !== "maintain" && (
+            <ProfileField
+              label="Priority"
+              value={goalPriorityLabels[profile.goalPriority] ?? profile.goalPriority}
+            />
+          )}
         </div>
       )}
 
@@ -225,11 +228,11 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div>
+            <div className={editForm.goal === "maintain" ? "col-span-2" : ""}>
               <label className={labelClass}>Goal</label>
               <select
                 value={editForm.goal}
-                onChange={(e) => setEditForm((f) => ({ ...f, goal: e.target.value }))}
+                onChange={(e) => setEditForm((f) => ({ ...f, goal: e.target.value, goalPriority: e.target.value === "maintain" ? "balanced" : f.goalPriority }))}
                 className={inputClass}
               >
                 <option value="">Select…</option>
@@ -238,19 +241,21 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 ))}
               </select>
             </div>
-            <div>
-              <label className={labelClass}>Priority</label>
-              <select
-                value={editForm.goalPriority}
-                onChange={(e) => setEditForm((f) => ({ ...f, goalPriority: e.target.value }))}
-                className={inputClass}
-              >
-                <option value="">Select…</option>
-                {GOAL_PRIORITY_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
+            {editForm.goal !== "maintain" && (
+              <div>
+                <label className={labelClass}>Priority</label>
+                <select
+                  value={editForm.goalPriority}
+                  onChange={(e) => setEditForm((f) => ({ ...f, goalPriority: e.target.value }))}
+                  className={inputClass}
+                >
+                  <option value="">Select…</option>
+                  {GOAL_PRIORITY_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {saveError && <p className="text-red-500 text-sm">{saveError}</p>}

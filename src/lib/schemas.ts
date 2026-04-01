@@ -3,7 +3,7 @@ import { z } from "zod";
 export const enumFields = {
   gender: z.enum(["male", "female"]),
   activityLevel: z.enum(["sedentary", "light", "moderate", "active", "very_active"]),
-  goal: z.enum(["bulk", "cut"]),
+  goal: z.enum(["bulk", "cut", "maintain"]),
   goalPriority: z.enum(["aggressive", "balanced", "conservative"]),
 };
 

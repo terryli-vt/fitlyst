@@ -139,6 +139,8 @@ export function useOnboarding() {
     }
 
     if (step.type === "goalPriority") {
+      // goalPriority is irrelevant for maintain — always valid
+      if (profile.goal === "maintain") return true;
       return profile.goalPriority !== "";
     }
 
@@ -154,15 +156,26 @@ export function useOnboarding() {
   const handleNext = async () => {
     if (!validateCurrentStep()) return;
 
-    if (currentStep === STEPS.length - 1) {
-      const nutrition = calculateNutrition(profile);
+    // "maintain" has no goalPriority — skip that step and submit from the goal step
+    const isLastStep = currentStep === STEPS.length - 1;
+    const skipToSubmit =
+      STEPS[currentStep].type === "goal" && profile.goal === "maintain";
+
+    if (isLastStep || skipToSubmit) {
+      // goalPriority is meaningless for maintain; default to "balanced" so the
+      // API schema is satisfied and the DB value is consistent.
+      const profileToSave =
+        profile.goal === "maintain"
+          ? { ...profile, goalPriority: "balanced" as const }
+          : profile;
+      const nutrition = calculateNutrition(profileToSave);
       setIsSaving(true);
       setSaveError(null);
       try {
         const res = await fetch("/api/profile", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ profile, nutrition }),
+          body: JSON.stringify({ profile: profileToSave, nutrition }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -196,7 +209,11 @@ export function useOnboarding() {
 
   // Calculate results once showResults is true
   const results: NutritionResults | null = showResults
-    ? calculateNutrition(profile)
+    ? calculateNutrition(
+        profile.goal === "maintain"
+          ? { ...profile, goalPriority: "balanced" as const }
+          : profile,
+      )
     : null;
 
   return {
