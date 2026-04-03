@@ -22,7 +22,7 @@ import { db } from "@/db";
 import { mealIdeas as mealIdeasTable } from "@/db/schema";
 import { openai } from "@/lib/openai";
 import type { NutritionResults, MealIdea } from "@/features/onboarding/types";
-import { getTodayCount, getTodayString, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
+import { getTodayCount, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
 import { generateMealIdeasSchema } from "@/lib/schemas";
 
 /**
@@ -53,28 +53,27 @@ Requirements:
 6. Keep suggestions simple and practical for someone new to meal planning
 7. Ensure the meals together roughly align with the daily targets (they don't need to be exact, just reasonable)
 
-Format your response as a JSON array of objects with this structure:
-[
-  {
-    "mealType": "breakfast",
-    "name": "Meal Name",
-    "description": "Brief description of the meal",
-    "macros": {
-      "calories": 500,
-      "protein": 30,
-      "carbs": 50,
-      "fat": 15
-    },
-    "cookingInstructions": [
-      "Step 1: Prepare ingredients",
-      "Step 2: Cook the main component",
-      "Step 3: Add seasonings and serve"
-    ]
-  },
-  ...
-]
-
-Only return valid JSON, no additional text.`;
+Return a JSON object with a "meals" key containing an array of meal objects:
+{
+  "meals": [
+    {
+      "mealType": "breakfast",
+      "name": "Meal Name",
+      "description": "Brief description of the meal",
+      "macros": {
+        "calories": 500,
+        "protein": 30,
+        "carbs": 50,
+        "fat": 15
+      },
+      "cookingInstructions": [
+        "Step 1: Prepare ingredients",
+        "Step 2: Cook the main component",
+        "Step 3: Add seasonings and serve"
+      ]
+    }
+  ]
+}`;
 }
 
 /**
@@ -82,42 +81,33 @@ Only return valid JSON, no additional text.`;
  * Attempts to extract JSON from the response and validates structure
  */
 function parseMealIdeas(response: string): MealIdea[] {
-  try {
-    // Try to extract JSON if the response has markdown code blocks
-    const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/) || response.match(/```\n([\s\S]*?)\n```/);
-    const jsonString = jsonMatch ? jsonMatch[1] : response;
-    
-    const parsed = JSON.parse(jsonString.trim());
-    
-    // Validate that it's an array
-    if (!Array.isArray(parsed)) {
-      throw new Error("Response is not an array");
-    }
-    
-    // Validate each meal idea has required fields
-    return parsed.map((meal: any) => {
-      if (!meal.mealType || !meal.name || !meal.macros) {
-        throw new Error("Invalid meal structure");
-      }
-      return {
-        mealType: meal.mealType,
-        name: meal.name,
-        description: meal.description || "",
-        macros: {
-          calories: meal.macros.calories || 0,
-          protein: meal.macros.protein || 0,
-          carbs: meal.macros.carbs || 0,
-          fat: meal.macros.fat || 0,
-        },
-        cookingInstructions: Array.isArray(meal.cookingInstructions) 
-          ? meal.cookingInstructions 
-          : (meal.cookingInstructions ? [meal.cookingInstructions] : []),
-      };
-    });
-  } catch (error) {
-    console.error("Error parsing meal ideas:", error);
-    throw new Error("Failed to parse AI response");
+  // JSON mode guarantees valid JSON — no regex extraction needed
+  const parsed = JSON.parse(response);
+
+  const meals = parsed.meals;
+  if (!Array.isArray(meals)) {
+    throw new Error("Response missing 'meals' array");
   }
+
+  return meals.map((meal: any) => {
+    if (!meal.mealType || !meal.name || !meal.macros) {
+      throw new Error("Invalid meal structure");
+    }
+    return {
+      mealType: meal.mealType,
+      name: meal.name,
+      description: meal.description || "",
+      macros: {
+        calories: meal.macros.calories || 0,
+        protein: meal.macros.protein || 0,
+        carbs: meal.macros.carbs || 0,
+        fat: meal.macros.fat || 0,
+      },
+      cookingInstructions: Array.isArray(meal.cookingInstructions)
+        ? meal.cookingInstructions
+        : meal.cookingInstructions ? [meal.cookingInstructions] : [],
+    };
+  });
 }
 
 /**
@@ -134,7 +124,6 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     // Rate limit check
-    const today = getTodayString();
     const record = await db.query.mealIdeas.findFirst({
       where: eq(mealIdeasTable.userId, userId),
     });
@@ -184,6 +173,7 @@ export async function POST(request: NextRequest) {
       ],
       temperature: 0.7, // Balance between creativity and consistency
       max_tokens: 2500, // Increased to accommodate cooking instructions
+      response_format: { type: "json_object" }, // Guarantees valid JSON — no regex extraction needed
     });
 
     // Extract response
@@ -207,7 +197,6 @@ export async function POST(request: NextRequest) {
         mealsJson,
         generatedAt: new Date(),
         dailyCount: newCount,
-        lastGeneratedDate: today,
       })
       .onConflictDoUpdate({
         target: mealIdeasTable.userId,
@@ -215,7 +204,6 @@ export async function POST(request: NextRequest) {
           mealsJson,
           generatedAt: new Date(),
           dailyCount: newCount,
-          lastGeneratedDate: today,
         },
       });
 

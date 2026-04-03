@@ -17,8 +17,12 @@ export default async function ProfilePage() {
   const { id: userId, name, email, image } = session.user;
 
   const [profile, nutrition, mealRecord] = await Promise.all([
-    db.query.userProfiles.findFirst({ where: eq(userProfiles.userId, userId!) }),
-    db.query.nutritionResults.findFirst({ where: eq(nutritionResults.userId, userId!) }),
+    db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, userId!),
+    }),
+    db.query.nutritionResults.findFirst({
+      where: eq(nutritionResults.userId, userId!),
+    }),
     db.query.mealIdeas.findFirst({ where: eq(mealIdeas.userId, userId!) }),
   ]);
 

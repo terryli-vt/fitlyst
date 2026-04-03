@@ -119,6 +119,15 @@ export function ResultsView({
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-red-700 dark:text-red-400 text-sm">
             <p className="font-medium">Error</p>
             <p>{error}</p>
+            {remainingGenerations > 0 && (
+              <button
+                onClick={onGenerateMealIdeas}
+                disabled={isLoading}
+                className="mt-2 font-medium underline hover:no-underline disabled:opacity-50"
+              >
+                Try again
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -77,7 +77,20 @@ export default function MealRecommendations({
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 mb-4 text-sm text-red-700 dark:text-red-400">
+          <p>{error}</p>
+          {remainingGenerations > 0 && (
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating}
+              className="mt-2 font-medium underline hover:no-underline disabled:opacity-50"
+            >
+              Try again
+            </button>
+          )}
+        </div>
+      )}
 
       {isGenerating && (
         <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">

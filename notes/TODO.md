@@ -19,15 +19,15 @@
   > 检查并加固 NextAuth v5 的 CSRF 防护配置，确保表单提交不被跨站伪造。
 
 ### Stability
-- [ ] Add a timeout to all OpenAI API calls (currently can hang indefinitely)
+- [x] Add a timeout to all OpenAI API calls (currently can hang indefinitely)
   > 为所有 OpenAI 请求设置超时时间，避免接口挂起导致用户无限等待。
-- [ ] Implement retry logic for transient OpenAI failures with user-facing retry button
+- [x] Implement retry logic for transient OpenAI failures with user-facing retry button
   > 对 OpenAI 临时性失败实现自动重试，并在页面上提供"重试"按钮供用户手动触发。
-- [ ] Replace fragile regex-based JSON extraction from LLM responses with a more robust parser (e.g., structured outputs or JSON mode)
+- [x] Replace fragile regex-based JSON extraction from LLM responses with a more robust parser (e.g., structured outputs or JSON mode)
   > 当前用正则从 LLM 响应中提取 JSON，格式稍有变化就会崩溃，改用结构化输出或 JSON mode 更稳健。
-- [ ] Fix daily meal generation rate limit — `lastGeneratedDate` relies on client timezone string splitting; switch to server-side UTC timestamp comparison
+- [x] Fix daily meal generation rate limit — `lastGeneratedDate` relies on client timezone string splitting; switch to server-side UTC timestamp comparison
   > 每日生成次数限制依赖客户端时区，可被绕过；改为服务端 UTC 时间戳比较。
-- [ ] Add a custom error page (`not-found.tsx`, `error.tsx`) and global error boundary
+- [x] Add a custom error page (`not-found.tsx`, `error.tsx`) and global error boundary
   > 添加自定义 404 和错误页面，以及全局错误边界，避免未处理异常直接崩溃白屏。
 
 ---
@@ -155,7 +155,7 @@
 
 - [ ] Add `.env.example` with placeholder values for all required variables
   > 添加 `.env.example` 文件，包含所有必需环境变量的占位示例值。
-- [ ] Add request timeout to OpenAI client initialization
+- [x] Add request timeout to OpenAI client initialization
   > 在初始化 OpenAI 客户端时设置请求超时，防止请求无限挂起。
 - [ ] Add `title` and `meta description` tags to all pages for SEO
   > 为所有页面添加 `title` 和 `meta description` 标签，提升搜索引擎收录效果。

@@ -2,16 +2,29 @@ export const DAILY_GENERATION_LIMIT = 10;
 
 interface MealRecord {
   dailyCount?: number | null;
-  lastGeneratedDate?: string | null;
+  generatedAt?: Date | null;
 }
 
 /**
- * Returns how many times the user has generated today,
+ * Returns how many times the user has generated today (UTC),
  * given their meal_ideas DB record (or null if none exists yet).
+ *
+ * Uses the server-side UTC timestamp in `generatedAt` instead of a
+ * client-supplied date string, so the count cannot be manipulated by
+ * timezone tricks or forged request data.
  */
 export function getTodayCount(record: MealRecord | null | undefined): number {
-  const today = getTodayString();
-  return record?.lastGeneratedDate === today ? (record.dailyCount ?? 0) : 0;
+  if (!record?.generatedAt || !record?.dailyCount) return 0;
+
+  const now = new Date();
+  const generated = new Date(record.generatedAt);
+
+  const sameUTCDay =
+    now.getUTCFullYear() === generated.getUTCFullYear() &&
+    now.getUTCMonth() === generated.getUTCMonth() &&
+    now.getUTCDate() === generated.getUTCDate();
+
+  return sameUTCDay ? (record.dailyCount ?? 0) : 0;
 }
 
 /**
@@ -20,11 +33,4 @@ export function getTodayCount(record: MealRecord | null | undefined): number {
  */
 export function getRemainingGenerations(record: MealRecord | null | undefined): number {
   return Math.max(0, DAILY_GENERATION_LIMIT - getTodayCount(record));
-}
-
-/**
- * Returns today's date string in "YYYY-MM-DD" format.
- */
-export function getTodayString(): string {
-  return new Date().toISOString().split("T")[0];
 }

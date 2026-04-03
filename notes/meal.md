@@ -2,23 +2,32 @@
 
 ```
 请求进来
-    → 查用户的 mealIdeas 记录
-    → 比较 lastGeneratedDate 是否是今天
+    → 查用户的 mealIdeas 记录（取 generatedAt + dailyCount）
+    → 用 UTC 日期比较 generatedAt 是否是今天
+        → 同一天：使用 dailyCount
+        → 不同天：视为 0（lazy reset，无需 cron job）
     → 如果 count >= 10 → 返回 429
     → 否则调用 OpenAI
-    → upsert：更新 mealsJson + dailyCount +1 + lastGeneratedDate = 今天
+    → upsert：更新 mealsJson + dailyCount +1 + generatedAt = now
 ```
 
-用了 onConflictDoUpdate，即 INSERT OR
-UPDATE，第一次生成插入新行，之后每次都更新同一行。
+用了 onConflictDoUpdate，即 INSERT OR UPDATE，第一次生成插入新行，之后每次都更新同一行。
 
-"我用了一个 date-stamp 计数法
-而不是定时重置。数据库里每个用户存两个字段：当天计数
-和最后生成日期。每次请求时，把 `lastGeneratedDate` 和今
-天的日期字符串比较——如果不一致，说明是新的一天，count
-直接视为 0，不需要任何 cron job
-或后台任务来清理数据。这是一种 lazy reset
-的思路，简单且无状态。"
+日期比较用 `getUTCFullYear/Month/Date` 三个字段同时匹配，全部基于服务端时间，不依赖任何客户端传入的数据：
+
+```ts
+// mealGenerationLimit.ts
+const sameUTCDay =
+  now.getUTCFullYear() === generated.getUTCFullYear() &&
+  now.getUTCMonth()    === generated.getUTCMonth()    &&
+  now.getUTCDate()     === generated.getUTCDate();
+
+return sameUTCDay ? (record.dailyCount ?? 0) : 0;
+```
+
+之前用 `lastGeneratedDate`（字符串 `"YYYY-MM-DD"`）做比较，是冗余字段。现在直接复用 `generatedAt` timestamp，去掉了这个多余的列（列仍在 schema 中保留为 nullable，但不再读写）。
+
+"依然是 lazy reset 的思路——不需要任何定时任务清理数据。每次请求时实时判断 generatedAt 是否在今天，不在就把 count 当 0 处理。区别是现在用的是真正的 UTC timestamp 比较，而不是字符串拼接，更严谨也更不容易出错。"
 
 # Cooking Instruction 展开逻辑
 
