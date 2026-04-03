@@ -4,12 +4,47 @@
 // If you use useState in a component, then the state is local to that component and not reusable.
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getErrorMessage } from "@/lib/error";
 import { useRouter } from "next/navigation";
 import type { UserProfile, NutritionResults } from "../types";
 import { STEPS } from "../config";
 import { calculateNutrition } from "../utils/calculateNutrition";
+
+const STORAGE_KEY = "fitlyst_onboarding";
+
+interface PersistedState {
+  profile: UserProfile;
+  currentStep: number;
+  heightUnit: "cm" | "ft";
+  weightUnit: "kg" | "lb";
+}
+
+function loadFromStorage(): Partial<PersistedState> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+    return JSON.parse(raw) as Partial<PersistedState>;
+  } catch {
+    return {};
+  }
+}
+
+function saveToStorage(state: PersistedState) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // ignore quota errors
+  }
+}
+
+function clearStorage() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
 
 /**
  * Custom hook for onboarding flow state management
@@ -20,27 +55,38 @@ import { calculateNutrition } from "../utils/calculateNutrition";
  */
 export function useOnboarding() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
+
+  const saved = loadFromStorage();
+
+  const [currentStep, setCurrentStep] = useState(saved.currentStep ?? 0);
   const [showResults, setShowResults] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // User profile state - structured for future persistence
-  // <UserProfile> is a TypeScript generic type, meaning the profile state must follow the structure defined by the UserProfile interface or type.
-  // Future: This could be initialized from saved user data if authenticated
-  const [profile, setProfile] = useState<UserProfile>({
-    height: { value: "", unit: "cm" },
-    weight: { value: "", unit: "kg" },
-    age: "",
-    gender: "",
-    activityLevel: "",
-    goal: "",
-    goalPriority: "",
-  });
+  const [profile, setProfile] = useState<UserProfile>(
+    saved.profile ?? {
+      height: { value: "", unit: "cm" },
+      weight: { value: "", unit: "kg" },
+      age: "",
+      gender: "",
+      activityLevel: "",
+      goal: "",
+      goalPriority: "",
+    },
+  );
 
   // Unit preferences for height and weight
-  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">("cm");
-  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg");
+  const [heightUnit, setHeightUnit] = useState<"cm" | "ft">(
+    saved.heightUnit ?? "cm",
+  );
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">(
+    saved.weightUnit ?? "kg",
+  );
+
+  // Persist state to localStorage whenever it changes
+  useEffect(() => {
+    saveToStorage({ profile, currentStep, heightUnit, weightUnit });
+  }, [profile, currentStep, heightUnit, weightUnit]);
 
   /**
    * Handle answer input changes
@@ -181,6 +227,7 @@ export function useOnboarding() {
           const data = await res.json();
           throw new Error(data.error ?? "Failed to save profile");
         }
+        clearStorage();
         setShowResults(true);
       } catch (err: unknown) {
         setSaveError(getErrorMessage(err, "Failed to save profile"));

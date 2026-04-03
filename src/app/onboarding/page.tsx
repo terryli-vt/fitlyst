@@ -143,43 +143,52 @@ export default function OnboardingPage() {
 
           {/* Navigation Buttons */}
           {!showResults && (
-            <div className="flex justify-between">
-              <button
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
-                  currentStep === 0
-                    ? "text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Previous
-              </button>
+            <>
+              <div className="flex justify-between">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentStep === 0}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-colors ${
+                    currentStep === 0
+                      ? "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Previous
+                </button>
 
-              <button
-                onClick={handleNext}
-                disabled={!validateCurrentStep() || isSaving}
-                className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-white transition-colors ${
-                  validateCurrentStep() && !isSaving
-                    ? "bg-teal-600 hover:bg-teal-700"
-                    : "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
-                }`}
-              >
-                {currentStep === STEPS.length - 1 ? "View Results" : "Next"}
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            </div>
+                <button
+                  onClick={handleNext}
+                  disabled={!validateCurrentStep() || isSaving}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-white transition-colors ${
+                    validateCurrentStep() && !isSaving
+                      ? "bg-teal-600 hover:bg-teal-700"
+                      : "bg-gray-300 dark:bg-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  {currentStep === STEPS.length - 1 ? "View Results" : "Next"}
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              </div>
+              {saveError && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400 text-sm">
+                  <p>{saveError}</p>
+                  <button
+                    onClick={handleNext}
+                    disabled={!validateCurrentStep()}
+                    className="mt-1.5 font-medium underline hover:no-underline disabled:opacity-50"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {/* Results View Actions */}
           {showResults && (
             <>
-              {saveError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400 text-sm mb-4">
-                  {saveError}
-                </div>
-              )}
               <div className="flex justify-center gap-4">
                 <button
                   onClick={handlePrevious}

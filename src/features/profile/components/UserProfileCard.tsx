@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getErrorMessage } from "@/lib/error";
 import Link from "next/link";
 import { Pencil, Check, X, RefreshCw } from "lucide-react";
@@ -46,6 +46,17 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Warn on browser-level navigation (refresh, close tab) when form is dirty
+  useEffect(() => {
+    if (!isEditing || !isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isEditing, isDirty]);
 
   const handleEdit = () => {
     setHeightUnit("cm");
@@ -63,12 +74,20 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
       goalPriority: profile?.goalPriority ?? "",
     });
     setSaveError(null);
+    setIsDirty(false);
     setIsEditing(true);
   };
 
   const handleCancel = () => {
+    if (isDirty && !window.confirm("You have unsaved changes. Discard them?")) return;
     setSaveError(null);
+    setIsDirty(false);
     setIsEditing(false);
+  };
+
+  const updateForm = (updater: Parameters<typeof setEditForm>[0]) => {
+    setIsDirty(true);
+    setEditForm(updater);
   };
 
   const handleHeightUnitToggle = () => {
@@ -79,14 +98,14 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
         const totalInches = cm / CM_PER_INCH;
         const ft = Math.floor(totalInches / 12);
         const inches = Math.round(totalInches % 12);
-        setEditForm((f) => ({ ...f, heightFt: ft.toString(), heightIn: inches.toString() }));
+        updateForm((f) => ({ ...f, heightFt: ft.toString(), heightIn: inches.toString() }));
       }
     } else {
       const ft = parseFloat(editForm.heightFt) || 0;
       const inches = parseFloat(editForm.heightIn) || 0;
       if (ft > 0 || inches > 0) {
         const cm = Math.round((ft * 12 + inches) * CM_PER_INCH);
-        setEditForm((f) => ({ ...f, heightCm: cm.toString() }));
+        updateForm((f) => ({ ...f, heightCm: cm.toString() }));
       }
     }
     setHeightUnit(newUnit);
@@ -98,13 +117,13 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
       const kg = parseFloat(editForm.weightKg);
       if (kg > 0) {
         const lb = Math.round(kg * LB_PER_KG * 10) / 10;
-        setEditForm((f) => ({ ...f, weightLb: lb.toString() }));
+        updateForm((f) => ({ ...f, weightLb: lb.toString() }));
       }
     } else {
       const lb = parseFloat(editForm.weightLb);
       if (lb > 0) {
         const kg = Math.round(lb * KG_PER_LB * 10) / 10;
-        setEditForm((f) => ({ ...f, weightKg: kg.toString() }));
+        updateForm((f) => ({ ...f, weightKg: kg.toString() }));
       }
     }
     setWeightUnit(newUnit);
@@ -173,6 +192,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
         data.nutrition,
       );
 
+      setIsDirty(false);
       setIsEditing(false);
     } catch (err) {
       setSaveError(getErrorMessage(err));
@@ -186,14 +206,21 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">User Profile</h2>
         {!isEditing && profile && (
-          <button
-            onClick={handleEdit}
-            disabled={editDisabled}
-            className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Pencil className="h-4 w-4" />
-            Edit
-          </button>
+          <div className="relative group">
+            <button
+              onClick={handleEdit}
+              disabled={editDisabled}
+              className="inline-flex items-center gap-1.5 text-sm text-teal-600 hover:text-teal-800 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Pencil className="h-4 w-4" />
+              Edit
+            </button>
+            {editDisabled && (
+              <span className="pointer-events-none absolute right-0 top-full mt-1.5 w-max max-w-45 rounded-lg bg-gray-800 dark:bg-gray-700 px-2.5 py-1.5 text-center text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-10">
+                Editing is disabled while generating meals
+              </span>
+            )}
+          </div>
         )}
       </div>
 
@@ -248,7 +275,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 <input
                   type="number"
                   value={editForm.heightCm}
-                  onChange={(e) => setEditForm((f) => ({ ...f, heightCm: e.target.value }))}
+                  onChange={(e) => updateForm((f) => ({ ...f, heightCm: e.target.value }))}
                   className={inputClass}
                   placeholder="175"
                 />
@@ -257,7 +284,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                   <input
                     type="number"
                     value={editForm.heightFt}
-                    onChange={(e) => setEditForm((f) => ({ ...f, heightFt: e.target.value }))}
+                    onChange={(e) => updateForm((f) => ({ ...f, heightFt: e.target.value }))}
                     className={inputClass}
                     placeholder="ft"
                     min="0"
@@ -265,7 +292,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                   <input
                     type="number"
                     value={editForm.heightIn}
-                    onChange={(e) => setEditForm((f) => ({ ...f, heightIn: e.target.value }))}
+                    onChange={(e) => updateForm((f) => ({ ...f, heightIn: e.target.value }))}
                     className={inputClass}
                     placeholder="in"
                     min="0"
@@ -289,8 +316,8 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 value={weightUnit === "kg" ? editForm.weightKg : editForm.weightLb}
                 onChange={(e) =>
                   weightUnit === "kg"
-                    ? setEditForm((f) => ({ ...f, weightKg: e.target.value }))
-                    : setEditForm((f) => ({ ...f, weightLb: e.target.value }))
+                    ? updateForm((f) => ({ ...f, weightKg: e.target.value }))
+                    : updateForm((f) => ({ ...f, weightLb: e.target.value }))
                 }
                 className={inputClass}
                 placeholder={weightUnit === "kg" ? "70" : "154"}
@@ -301,7 +328,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
               <input
                 type="number"
                 value={editForm.age}
-                onChange={(e) => setEditForm((f) => ({ ...f, age: e.target.value }))}
+                onChange={(e) => updateForm((f) => ({ ...f, age: e.target.value }))}
                 className={inputClass}
                 placeholder="25"
               />
@@ -310,7 +337,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
               <label className={labelClass}>Gender</label>
               <select
                 value={editForm.gender}
-                onChange={(e) => setEditForm((f) => ({ ...f, gender: e.target.value }))}
+                onChange={(e) => updateForm((f) => ({ ...f, gender: e.target.value }))}
                 className={inputClass}
               >
                 <option value="">Select…</option>
@@ -325,7 +352,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
             <label className={labelClass}>Activity Level</label>
             <select
               value={editForm.activityLevel}
-              onChange={(e) => setEditForm((f) => ({ ...f, activityLevel: e.target.value }))}
+              onChange={(e) => updateForm((f) => ({ ...f, activityLevel: e.target.value }))}
               className={inputClass}
             >
               <option value="">Select…</option>
@@ -340,7 +367,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
               <label className={labelClass}>Goal</label>
               <select
                 value={editForm.goal}
-                onChange={(e) => setEditForm((f) => ({ ...f, goal: e.target.value, goalPriority: e.target.value === "maintain" ? "balanced" : f.goalPriority }))}
+                onChange={(e) => updateForm((f) => ({ ...f, goal: e.target.value, goalPriority: e.target.value === "maintain" ? "balanced" : f.goalPriority }))}
                 className={inputClass}
               >
                 <option value="">Select…</option>
@@ -354,7 +381,7 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
                 <label className={labelClass}>Priority</label>
                 <select
                   value={editForm.goalPriority}
-                  onChange={(e) => setEditForm((f) => ({ ...f, goalPriority: e.target.value }))}
+                  onChange={(e) => updateForm((f) => ({ ...f, goalPriority: e.target.value }))}
                   className={inputClass}
                 >
                   <option value="">Select…</option>
@@ -366,7 +393,18 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
             )}
           </div>
 
-          {saveError && <p className="text-red-500 text-sm">{saveError}</p>}
+          {saveError && (
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-400">
+              <p>{saveError}</p>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="mt-1.5 font-medium underline hover:no-underline disabled:opacity-50"
+              >
+                Retry
+              </button>
+            </div>
+          )}
 
           <div className="flex gap-3 pt-1">
             <button

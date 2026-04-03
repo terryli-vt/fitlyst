@@ -7,6 +7,7 @@
 ## 🔴 High Priority — Security & Stability
 
 ### Security
+
 - [x] Add Content Security Policy (CSP) and other security headers (X-Frame-Options, X-Content-Type-Options, etc.) via `next.config.ts` or middleware
   > 添加内容安全策略和其他安全响应头，防止点击劫持和 MIME 类型嗅探等攻击。
 - [x] Sanitize LLM-generated meal content before rendering to prevent XSS
@@ -19,6 +20,7 @@
   > 检查并加固 NextAuth v5 的 CSRF 防护配置，确保表单提交不被跨站伪造。
 
 ### Stability
+
 - [x] Add a timeout to all OpenAI API calls (currently can hang indefinitely)
   > 为所有 OpenAI 请求设置超时时间，避免接口挂起导致用户无限等待。
 - [x] Implement retry logic for transient OpenAI failures with user-facing retry button
@@ -35,27 +37,30 @@
 ## 🟡 Medium Priority — User Experience
 
 ### Data Loss Prevention
-- [ ] Persist onboarding form progress to `localStorage` so a page refresh doesn't wipe all 7 steps
+
+- [x] Persist onboarding form progress to `localStorage` so a page refresh doesn't wipe all 7 steps
   > 将 onboarding 的填写进度保存到 `localStorage`，刷新页面后不会丢失已填内容。
-- [ ] Show an "unsaved changes" warning when navigating away from the profile edit form
+- [x] Show an "unsaved changes" warning when navigating away from the profile edit form
   > 在 Profile 编辑表单有未保存改动时，离开页面前弹出提示，防止意外丢失修改。
 
 ### Interaction Gaps
-- [ ] Add a tooltip to the disabled edit button during meal generation explaining why it's locked
+
+- [x] Add a tooltip to the disabled edit button during meal generation explaining why it's locked
   > 生成餐食期间编辑按钮被禁用，应添加 tooltip 说明原因，避免用户困惑。
-- [ ] Show a retry button on failed API calls (meal generation, profile save, etc.)
+- [x] Show a retry button on failed API calls (meal generation, profile save, etc.)
   > API 调用失败时显示"重试"按钮，提升错误恢复体验。
 - [ ] Allow users to specify dietary preferences, allergies, or cuisine preferences before generating meal ideas
   > 在生成餐食建议前，让用户填写饮食偏好、过敏信息或菜系偏好，使结果更个性化。
-- [ ] Add a loading skeleton to the profile page initial load instead of a blank/spinner state
+- [x] Add a loading skeleton to the profile page initial load instead of a blank/spinner state
   > Profile 页面初始加载时显示骨架屏，替代空白或转圈动画，提升视觉体验。
-- [ ] Show an explanation for the daily generation limit (currently arbitrary-looking)
+- [x] Show an explanation for the daily generation limit (currently arbitrary-looking)
   > 每日生成次数上限目前没有说明，应在界面上解释原因（如 API 成本控制）。
 
 ### Navigation & Flow
+
 - [ ] Optimize the onboarding auth check — currently does a client-side fetch to `/api/profile`; move to server-side redirect
   > Onboarding 页面目前通过客户端 fetch 检查用户是否已有档案，改为服务端重定向可消除加载闪烁。
-- [ ] Add custom 404 and error pages
+- [x] Add custom 404 and error pages
   > 添加自定义 404 页面和通用错误页面，保持与整体设计风格一致。
 
 ---
@@ -63,6 +68,7 @@
 ## 🟡 Medium Priority — Code Quality
 
 ### Duplicate Logic
+
 - [ ] Nutrition calculation runs on both client (`useOnboarding`) and server (API route) — remove the client-side duplicate and rely on the server result
   > 营养数据的计算在客户端和服务端各执行了一次，删除客户端的重复计算，统一依赖服务端结果。
 - [ ] Meal generation UI is duplicated between `ResultsView` (onboarding) and `MealRecommendations` (profile) — extract to a shared component
@@ -71,6 +77,7 @@
   > Profile 表单的校验逻辑在 onboarding 和编辑页中重复存在，提取为共享 hook 或工具函数。
 
 ### Database
+
 - [ ] Add indexes on frequently queried columns: `users.email`, `userProfiles.userId`, `nutritionResults.userId`, `mealIdeas.userId`
   > 在高频查询字段上添加索引，显著提升数据库查询性能。
 - [ ] Add `onDelete: "cascade"` to all foreign key relations so deleting a user cleans up related rows
@@ -83,6 +90,7 @@
   > 在数据库层面为身高、体重、年龄等字段添加范围约束，防止异常数据写入。
 
 ### Type Safety & Code Organization
+
 - [ ] `UserProfile` type is defined in multiple places — consolidate into a single source of truth
   > `UserProfile` 类型在多处重复定义，统一到单一来源，避免类型不一致。
 - [ ] Eliminate `any` types in OpenAI response parsing — use Zod schemas to validate the parsed JSON
@@ -99,6 +107,7 @@
 ## 🟢 Low Priority — Infrastructure & Tooling
 
 ### Testing
+
 - [ ] Set up a test runner (Vitest recommended for Next.js)
   > 配置测试框架（推荐 Vitest），为后续编写单元测试和集成测试打好基础。
 - [ ] Write unit tests for core nutrition calculations: BMR (Mifflin-St Jeor), TDEE, macro splits
@@ -109,6 +118,7 @@
   > 为核心 API 路由编写集成测试，验证完整的请求-响应链路是否正确。
 
 ### Monitoring & Observability
+
 - [ ] Integrate an error tracking service (e.g., Sentry) for production error visibility
   > 接入错误追踪服务（如 Sentry），实时捕获生产环境中的异常并告警。
 - [ ] Add structured request logging for API routes (timestamp, userId, latency, status)
@@ -117,6 +127,7 @@
   > 接入基础数据分析工具（如 Posthog），追踪功能使用情况，辅助产品决策。
 
 ### Build & Deployment
+
 - [ ] Add CI/CD pipeline (GitHub Actions) for lint, type-check, and test on every PR
   > 配置 GitHub Actions，在每个 PR 上自动执行 lint、类型检查和测试，防止问题合入主分支。
 - [ ] Configure `next.config.ts` with response compression and image optimization settings

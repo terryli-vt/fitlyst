@@ -82,9 +82,14 @@ export function ResultsView({
 
       {/* Generate Meal Ideas */}
       <div className="space-y-3">
-        <p className="text-xs text-gray-400 dark:text-gray-500 text-right">
-          {remainingGenerations} generation{remainingGenerations !== 1 ? "s" : ""} remaining today
-        </p>
+        <div className="relative group flex justify-end">
+          <span className="text-xs text-gray-400 dark:text-gray-500 cursor-default">
+            {remainingGenerations} generation{remainingGenerations !== 1 ? "s" : ""} remaining today
+          </span>
+          <span className="pointer-events-none absolute right-0 top-full mt-1.5 w-56 rounded-lg bg-gray-800 dark:bg-gray-700 px-3 py-2 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 z-10">
+            Meal generation uses the OpenAI API, so it&apos;s limited to 10 times per day to manage costs.
+          </span>
+        </div>
         {hasMealIdeas ? (
           <div className="flex gap-3">
             <button
