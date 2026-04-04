@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Get Started — Fitlyst",
+  description: "Set up your Fitlyst profile to receive a personalized calorie and macro plan tailored to your goals.",
+};
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";

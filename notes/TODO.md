@@ -164,15 +164,15 @@
 
 ## ✅ Quick Wins (High value, low effort)
 
-- [ ] Add `.env.example` with placeholder values for all required variables
+- [x] Add `.env.example` with placeholder values for all required variables
   > 添加 `.env.example` 文件，包含所有必需环境变量的占位示例值。
 - [x] Add request timeout to OpenAI client initialization
   > 在初始化 OpenAI 客户端时设置请求超时，防止请求无限挂起。
-- [ ] Add `title` and `meta description` tags to all pages for SEO
+- [x] Add `title` and `meta description` tags to all pages for SEO
   > 为所有页面添加 `title` 和 `meta description` 标签，提升搜索引擎收录效果。
-- [ ] Add `aria-label` to icon-only buttons throughout the UI
+- [x] Add `aria-label` to icon-only buttons throughout the UI
   > 为所有纯图标按钮添加 `aria-label`，改善屏幕阅读器的可访问性。
-- [ ] Extract all hardcoded limit/threshold values into `src/lib/constants.ts`
+- [x] Extract all hardcoded limit/threshold values into `src/lib/constants.ts`
   > 将所有硬编码的限制值和阈值统一提取到 `src/lib/constants.ts`，方便集中管理和修改。
-- [ ] Add JSDoc comments to all public utility functions in `src/lib/`
+- [x] Add JSDoc comments to all public utility functions in `src/lib/`
   > 为 `src/lib/` 下所有公共工具函数添加 JSDoc 注释，提升代码可读性和 IDE 提示质量。

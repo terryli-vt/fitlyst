@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { OPENAI_TIMEOUT_MS, OPENAI_MAX_RETRIES } from "./constants";
 
 /**
  * Shared OpenAI client instance.
@@ -9,6 +10,6 @@ import OpenAI from "openai";
  */
 export const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  timeout: 30_000, // 30 seconds — prevents requests from hanging indefinitely
-  maxRetries: 2,   // auto-retry on 429 and 5xx before surfacing the error
+  timeout: OPENAI_TIMEOUT_MS,
+  maxRetries: OPENAI_MAX_RETRIES,
 });

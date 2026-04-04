@@ -22,7 +22,8 @@ import { db } from "@/db";
 import { mealIdeas as mealIdeasTable } from "@/db/schema";
 import { openai } from "@/lib/openai";
 import type { NutritionResults, MealIdea, DietaryPreferences } from "@/features/onboarding/types";
-import { getTodayCount, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
+import { getTodayCount } from "@/lib/mealGenerationLimit";
+import { DAILY_GENERATION_LIMIT, OPENAI_MODEL, OPENAI_TEMPERATURE, OPENAI_MAX_TOKENS } from "@/lib/constants";
 import { generateMealIdeasSchema } from "@/lib/schemas";
 
 /**
@@ -183,7 +184,7 @@ export async function POST(request: NextRequest) {
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Using gpt-4o-mini for cost efficiency, can be upgraded to gpt-4o for better results
+      model: OPENAI_MODEL,
       messages: [
         {
           role: "system",
@@ -194,8 +195,8 @@ export async function POST(request: NextRequest) {
           content: prompt,
         },
       ],
-      temperature: 0.7, // Balance between creativity and consistency
-      max_tokens: 2500, // Increased to accommodate cooking instructions
+      temperature: OPENAI_TEMPERATURE,
+      max_tokens: OPENAI_MAX_TOKENS,
       response_format: { type: "json_object" }, // Guarantees valid JSON — no regex extraction needed
     });
 

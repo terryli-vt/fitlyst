@@ -1,4 +1,4 @@
-export const DAILY_GENERATION_LIMIT = 10;
+import { DAILY_GENERATION_LIMIT } from "./constants";
 
 interface MealRecord {
   dailyCount?: number | null;
@@ -31,6 +31,8 @@ export function getTodayCount(record: MealRecord | null | undefined): number {
  * Returns how many generations the user has left today,
  * given their meal_ideas DB record (or null if none exists yet).
  */
-export function getRemainingGenerations(record: MealRecord | null | undefined): number {
+export function getRemainingGenerations(
+  record: MealRecord | null | undefined,
+): number {
   return Math.max(0, DAILY_GENERATION_LIMIT - getTodayCount(record));
 }

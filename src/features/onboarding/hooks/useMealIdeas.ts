@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
+import { DAILY_GENERATION_LIMIT } from "@/lib/constants";
 import { getErrorMessage } from "@/lib/error";
 import type { MealIdea, NutritionResults, DietaryPreferences } from "../types";
 
@@ -17,11 +17,14 @@ export function useMealIdeas(initialPreferences?: DietaryPreferences) {
   const [error, setError] = useState<string | null>(null);
   const [mealIdeas, setMealIdeas] = useState<MealIdea[] | null>(null);
   const [showMealIdeas, setShowMealIdeas] = useState(false);
-  const [remainingGenerations, setRemainingGenerations] = useState<number>(DAILY_GENERATION_LIMIT);
+  const [remainingGenerations, setRemainingGenerations] = useState<number>(
+    DAILY_GENERATION_LIMIT,
+  );
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [pendingNutrition, setPendingNutrition] = useState<NutritionResults | null>(null);
+  const [pendingNutrition, setPendingNutrition] =
+    useState<NutritionResults | null>(null);
   // Saved preferences — starts from profile, updated each time user confirms
   const [savedPreferences, setSavedPreferences] = useState<DietaryPreferences>(
     initialPreferences ?? EMPTY_PREFERENCES,
@@ -80,7 +83,10 @@ export function useMealIdeas(initialPreferences?: DietaryPreferences) {
     await doGenerate(pendingNutrition!, EMPTY_PREFERENCES);
   };
 
-  const doGenerate = async (nutrition: NutritionResults, preferences: DietaryPreferences) => {
+  const doGenerate = async (
+    nutrition: NutritionResults,
+    preferences: DietaryPreferences,
+  ) => {
     setIsLoading(true);
     setError(null);
 

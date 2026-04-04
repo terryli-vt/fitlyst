@@ -188,6 +188,9 @@ export default function UserProfileCard({ profile, onSaved, editDisabled = false
           activityLevel,
           goal,
           goalPriority,
+          dietaryRestrictions: profile?.dietaryRestrictions ?? [],
+          allergies: profile?.allergies ?? [],
+          cuisinePreferences: profile?.cuisinePreferences ?? [],
         },
         data.nutrition,
       );

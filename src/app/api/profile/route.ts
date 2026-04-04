@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { heightToCm, weightToKg } from "@/lib/units";
+import { MAX_HEIGHT_CM, MAX_WEIGHT_KG, MAX_AGE } from "@/lib/constants";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";
@@ -70,13 +71,13 @@ export async function POST(request: NextRequest) {
   const weightKg = weightToKg(profile.weight.value, profile.weight.unit);
   const age = parseInt(profile.age);
 
-  if (isNaN(heightCm) || heightCm <= 0 || heightCm > 300) {
+  if (isNaN(heightCm) || heightCm <= 0 || heightCm > MAX_HEIGHT_CM) {
     return NextResponse.json({ error: "Invalid height" }, { status: 400 });
   }
-  if (isNaN(weightKg) || weightKg <= 0 || weightKg > 500) {
+  if (isNaN(weightKg) || weightKg <= 0 || weightKg > MAX_WEIGHT_KG) {
     return NextResponse.json({ error: "Invalid weight" }, { status: 400 });
   }
-  if (isNaN(age) || age <= 0 || age > 120) {
+  if (isNaN(age) || age <= 0 || age > MAX_AGE) {
     return NextResponse.json({ error: "Invalid age" }, { status: 400 });
   }
 

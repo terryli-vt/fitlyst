@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "My Profile — Fitlyst",
+  description: "View and manage your nutrition plan, meal recommendations, and dietary preferences on Fitlyst.",
+};
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
 import { db } from "@/db";

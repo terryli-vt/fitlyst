@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { signIn } from "@/auth";
 import { Sparkles } from "lucide-react";
+import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "Sign In — Fitlyst",
+  description: "Sign in to Fitlyst to access your personalized AI nutrition plan and meal recommendations.",
+};
 
 export default function LoginPage() {
   return (
@@ -7,7 +14,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-teal-700 dark:text-teal-400 mb-2">Fitlyst</h1>
+          <Image src="/logo.svg" alt="Fitlyst" width={72} height={72} className="mx-auto mb-2" priority />
           <div className="inline-flex items-center gap-2 rounded-full bg-green-100 dark:bg-green-900/30 px-4 py-2 text-sm font-medium text-green-700 dark:text-green-400">
             <Sparkles className="h-4 w-4" />
             <span>AI-Powered Nutrition</span>
