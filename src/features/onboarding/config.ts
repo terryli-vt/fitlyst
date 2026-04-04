@@ -84,6 +84,43 @@ export const GOAL_OPTIONS = [
   },
 ] as const;
 
+// Dietary preference options (used in meal generation modal and profile card)
+export const DIETARY_RESTRICTION_OPTIONS = [
+  { value: "vegetarian", label: "Vegetarian" },
+  { value: "vegan", label: "Vegan" },
+  { value: "pescatarian", label: "Pescatarian" },
+  { value: "halal", label: "Halal" },
+  { value: "kosher", label: "Kosher" },
+  { value: "gluten-free", label: "Gluten-Free" },
+  { value: "dairy-free", label: "Dairy-Free" },
+] as const;
+
+export const ALLERGY_OPTIONS = [
+  { value: "nuts", label: "Tree Nuts" },
+  { value: "peanuts", label: "Peanuts" },
+  { value: "shellfish", label: "Shellfish" },
+  { value: "eggs", label: "Eggs" },
+  { value: "soy", label: "Soy" },
+  { value: "wheat", label: "Wheat / Gluten" },
+  { value: "fish", label: "Fish" },
+  { value: "dairy", label: "Dairy" },
+] as const;
+
+export const CUISINE_OPTIONS = [
+  { value: "asian", label: "Asian" },
+  { value: "mediterranean", label: "Mediterranean" },
+  { value: "american", label: "American" },
+  { value: "mexican", label: "Mexican" },
+  { value: "middle-eastern", label: "Middle Eastern" },
+  { value: "italian", label: "Italian" },
+  { value: "indian", label: "Indian" },
+] as const;
+
+// Derive valid value arrays for Zod enums
+export const VALID_DIETARY_RESTRICTIONS = DIETARY_RESTRICTION_OPTIONS.map((o) => o.value) as [string, ...string[]];
+export const VALID_ALLERGIES = ALLERGY_OPTIONS.map((o) => o.value) as [string, ...string[]];
+export const VALID_CUISINES = CUISINE_OPTIONS.map((o) => o.value) as [string, ...string[]];
+
 // Goal priority options
 export const GOAL_PRIORITY_OPTIONS = [
   {

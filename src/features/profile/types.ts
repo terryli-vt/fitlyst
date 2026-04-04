@@ -7,6 +7,9 @@ export type DBProfile = {
   activityLevel: string;
   goal: string;
   goalPriority: string;
+  dietaryRestrictions: string[];
+  allergies: string[];
+  cuisinePreferences: string[];
 };
 
 export type DBNutrition = {

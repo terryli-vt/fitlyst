@@ -21,7 +21,7 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { mealIdeas as mealIdeasTable } from "@/db/schema";
 import { openai } from "@/lib/openai";
-import type { NutritionResults, MealIdea } from "@/features/onboarding/types";
+import type { NutritionResults, MealIdea, DietaryPreferences } from "@/features/onboarding/types";
 import { getTodayCount, DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
 import { generateMealIdeasSchema } from "@/lib/schemas";
 
@@ -35,23 +35,45 @@ import { generateMealIdeasSchema } from "@/lib/schemas";
  * - Request for macro breakdown per meal
  * - Emphasis on simple, beginner-friendly suggestions
  */
-function constructPrompt(nutrition: NutritionResults): string {
-  return `You are a helpful nutrition assistant. Generate 3-5 meal ideas based on the following daily nutrition plan:
+function constructPrompt(nutrition: NutritionResults, preferences?: DietaryPreferences): string {
+  const hasPreferences =
+    preferences &&
+    (preferences.dietaryRestrictions.length > 0 ||
+      preferences.allergies.length > 0 ||
+      preferences.cuisinePreferences.length > 0);
+
+  const prefLines: string[] = [];
+  if (preferences?.dietaryRestrictions.length)
+    prefLines.push(`- Dietary restrictions: ${preferences.dietaryRestrictions.join(", ")}`);
+  if (preferences?.allergies.length)
+    prefLines.push(`- Allergies (must avoid): ${preferences.allergies.join(", ")}`);
+  if (preferences?.cuisinePreferences.length)
+    prefLines.push(`- Preferred cuisines: ${preferences.cuisinePreferences.join(", ")}`);
+
+  return `You are a helpful nutrition assistant. Generate meal ideas based on the following daily nutrition plan:
 
 Daily Nutrition Targets:
 - Calories: ${nutrition.calories} kcal
 - Protein: ${nutrition.protein} g
 - Carbohydrates: ${nutrition.carbs} g
 - Fat: ${nutrition.fat} g
+${hasPreferences ? `\nUser Preferences (strictly follow these):\n${prefLines.join("\n")}` : ""}
+Calorie distribution guidelines:
+- Breakfast: ~25% of daily calories (${Math.round(nutrition.calories * 0.25)} kcal)
+- Lunch: ~35% of daily calories (${Math.round(nutrition.calories * 0.35)} kcal)
+- Dinner: ~35% of daily calories (${Math.round(nutrition.calories * 0.35)} kcal)
+- If breakfast + lunch + dinner total is more than 200 kcal below the daily target, add 1–2 snacks to make up the difference. Each snack should cover roughly half the remaining gap.
 
 Requirements:
-1. Generate 3-5 meal ideas total, covering breakfast, lunch, and dinner
-2. Each meal should be clearly labeled as "breakfast", "lunch", or "dinner"
-3. Provide a simple, beginner-friendly meal name and brief description
-4. Include macro breakdown (calories, protein in grams, carbs in grams, fat in grams) for each meal
-5. Include cooking instructions as an array of step-by-step instructions
-6. Keep suggestions simple and practical for someone new to meal planning
-7. Ensure the meals together roughly align with the daily targets (they don't need to be exact, just reasonable)
+1. Always include exactly one breakfast, one lunch, and one dinner
+2. Add snacks only if needed to meet the calorie target (as described above)
+3. Each meal must be clearly labeled as "breakfast", "lunch", "dinner", or "snack"
+4. Provide a simple, beginner-friendly meal name and brief description
+5. Include macro breakdown (calories, protein in grams, carbs in grams, fat in grams) for each meal
+6. Include cooking instructions as an array of step-by-step instructions
+7. Keep suggestions simple and practical for someone new to meal planning
+8. The total calories across all meals should be within 150 kcal of the daily target
+${hasPreferences ? "9. Strictly respect all dietary restrictions and allergies — do not include any restricted or allergenic ingredients" : ""}
 
 Return a JSON object with a "meals" key containing an array of meal objects:
 {
@@ -154,9 +176,10 @@ export async function POST(request: NextRequest) {
       );
     }
     const nutrition: NutritionResults = parsed.data.nutrition;
+    const preferences = parsed.data.preferences as DietaryPreferences | undefined;
 
     // Construct prompt
-    const prompt = constructPrompt(nutrition);
+    const prompt = constructPrompt(nutrition, preferences);
 
     // Call OpenAI API
     const completion = await openai.chat.completions.create({

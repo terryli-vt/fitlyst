@@ -3,27 +3,29 @@
 import { useState, useEffect } from "react";
 import { DAILY_GENERATION_LIMIT } from "@/lib/mealGenerationLimit";
 import { getErrorMessage } from "@/lib/error";
-import type { MealIdea, NutritionResults } from "../types";
+import type { MealIdea, NutritionResults, DietaryPreferences } from "../types";
 
-/**
- * useMealIdeas hook
- *
- * Centralises all meal-ideas state that was previously split between
- * OnboardingPage (isGeneratingMealIdeas, mealIdeas, showMealIdeas) and
- * ResultsView (isLoading, error).  ResultsView now receives these values as
- * props and calls onGenerateMealIdeas() — no callbacks needed to sync state
- * between parent and child.
- *
- * On mount, fetches any existing meal ideas from the DB so the results page
- * can show "View Meal Ideas" / "Regenerate" instead of "Generate" if the user
- * has already generated ideas in a previous session.
- */
-export function useMealIdeas() {
+const EMPTY_PREFERENCES: DietaryPreferences = {
+  dietaryRestrictions: [],
+  allergies: [],
+  cuisinePreferences: [],
+};
+
+export function useMealIdeas(initialPreferences?: DietaryPreferences) {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSavingPrefs, setIsSavingPrefs] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mealIdeas, setMealIdeas] = useState<MealIdea[] | null>(null);
   const [showMealIdeas, setShowMealIdeas] = useState(false);
   const [remainingGenerations, setRemainingGenerations] = useState<number>(DAILY_GENERATION_LIMIT);
+
+  // Modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingNutrition, setPendingNutrition] = useState<NutritionResults | null>(null);
+  // Saved preferences — starts from profile, updated each time user confirms
+  const [savedPreferences, setSavedPreferences] = useState<DietaryPreferences>(
+    initialPreferences ?? EMPTY_PREFERENCES,
+  );
 
   // Fetch existing meal ideas and remaining quota from DB on mount
   useEffect(() => {
@@ -42,7 +44,43 @@ export function useMealIdeas() {
       });
   }, []);
 
-  const generateMealIdeas = async (nutrition: NutritionResults) => {
+  // Opens the modal instead of generating directly
+  const generateMealIdeas = (nutrition: NutritionResults) => {
+    setPendingNutrition(nutrition);
+    setModalOpen(true);
+  };
+
+  // Called when user clicks "Generate" in the modal — saves prefs then generates
+  const handleModalConfirm = async (preferences: DietaryPreferences) => {
+    setIsSavingPrefs(true);
+    try {
+      await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dietaryRestrictions: preferences.dietaryRestrictions,
+          allergies: preferences.allergies,
+          cuisinePreferences: preferences.cuisinePreferences,
+        }),
+      });
+      setSavedPreferences(preferences);
+    } catch {
+      // Non-fatal — still proceed with generation
+    } finally {
+      setIsSavingPrefs(false);
+    }
+
+    setModalOpen(false);
+    await doGenerate(pendingNutrition!, preferences);
+  };
+
+  // Called when user clicks "Skip" — generates without any preferences, nothing saved
+  const handleModalSkip = async () => {
+    setModalOpen(false);
+    await doGenerate(pendingNutrition!, EMPTY_PREFERENCES);
+  };
+
+  const doGenerate = async (nutrition: NutritionResults, preferences: DietaryPreferences) => {
     setIsLoading(true);
     setError(null);
 
@@ -50,7 +88,7 @@ export function useMealIdeas() {
       const response = await fetch("/api/generate-meal-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nutrition }),
+        body: JSON.stringify({ nutrition, preferences }),
       });
 
       if (!response.ok) {
@@ -85,11 +123,17 @@ export function useMealIdeas() {
 
   return {
     isLoading,
+    isSavingPrefs,
     error,
     mealIdeas,
     showMealIdeas,
     remainingGenerations,
+    modalOpen,
+    savedPreferences,
     generateMealIdeas,
+    handleModalConfirm,
+    handleModalSkip,
+    onModalClose: () => setModalOpen(false),
     viewMealIdeas,
     handleBack,
   };

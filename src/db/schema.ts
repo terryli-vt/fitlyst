@@ -64,6 +64,9 @@ export const userProfiles = pgTable("user_profiles", {
   activityLevel: text("activity_level").notNull(),
   goal: text("goal").notNull(),
   goalPriority: text("goal_priority").notNull(),
+  dietaryRestrictions: text("dietary_restrictions"), // JSON array e.g. '["vegetarian","gluten-free"]'
+  allergies: text("allergies"),                       // JSON array e.g. '["nuts","dairy"]'
+  cuisinePreferences: text("cuisine_preferences"),    // JSON array e.g. '["asian","mediterranean"]'
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 

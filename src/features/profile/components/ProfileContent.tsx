@@ -8,8 +8,9 @@ import ProfileHeader from "./ProfileHeader";
 import UserProfileCard from "./UserProfileCard";
 import NutritionCard from "./NutritionCard";
 import MealRecommendations from "./MealRecommendations";
+import DietaryPreferencesCard from "./DietaryPreferencesCard";
 import type { DBProfile, DBNutrition, UserInfo } from "../types";
-import type { MealIdea } from "@/features/onboarding/types";
+import type { MealIdea, DietaryPreferences } from "@/features/onboarding/types";
 
 interface ProfileContentProps {
   user: UserInfo;
@@ -17,6 +18,7 @@ interface ProfileContentProps {
   initialNutrition: DBNutrition | null;
   initialMeals: MealIdea[] | null;
   initialRemainingGenerations: number;
+  initialPreferences: DietaryPreferences;
 }
 
 export default function ProfileContent({
@@ -25,9 +27,11 @@ export default function ProfileContent({
   initialNutrition,
   initialMeals,
   initialRemainingGenerations,
+  initialPreferences,
 }: ProfileContentProps) {
   const [profile, setProfile] = useState<DBProfile | null>(initialProfile);
   const [nutrition, setNutrition] = useState<DBNutrition | null>(initialNutrition);
+  const [preferences, setPreferences] = useState<DietaryPreferences>(initialPreferences);
   const [isGeneratingMeals, setIsGeneratingMeals] = useState(false);
 
   const handleSaved = (newProfile: DBProfile, newNutrition: DBNutrition) => {
@@ -55,11 +59,22 @@ export default function ProfileContent({
           {nutrition && <NutritionCard nutrition={nutrition} />}
         </div>
 
+        {profile && (
+          <div className="mb-6">
+            <DietaryPreferencesCard
+              initialPreferences={preferences}
+              onSaved={setPreferences}
+              editDisabled={isGeneratingMeals}
+            />
+          </div>
+        )}
+
         {nutrition && (
           <MealRecommendations
             initialMeals={initialMeals}
             nutrition={nutrition}
             initialRemainingGenerations={initialRemainingGenerations}
+            preferences={preferences}
             onGeneratingChange={setIsGeneratingMeals}
           />
         )}

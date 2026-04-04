@@ -49,7 +49,7 @@
   > 生成餐食期间编辑按钮被禁用，应添加 tooltip 说明原因，避免用户困惑。
 - [x] Show a retry button on failed API calls (meal generation, profile save, etc.)
   > API 调用失败时显示"重试"按钮，提升错误恢复体验。
-- [ ] Allow users to specify dietary preferences, allergies, or cuisine preferences before generating meal ideas
+- [x] Allow users to specify dietary preferences, allergies, or cuisine preferences before generating meal ideas
   > 在生成餐食建议前，让用户填写饮食偏好、过敏信息或菜系偏好，使结果更个性化。
 - [x] Add a loading skeleton to the profile page initial load instead of a blank/spinner state
   > Profile 页面初始加载时显示骨架屏，替代空白或转圈动画，提升视觉体验。
@@ -58,7 +58,7 @@
 
 ### Navigation & Flow
 
-- [ ] Optimize the onboarding auth check — currently does a client-side fetch to `/api/profile`; move to server-side redirect
+- [x] Optimize the onboarding auth check — currently does a client-side fetch to `/api/profile`; move to server-side redirect
   > Onboarding 页面目前通过客户端 fetch 检查用户是否已有档案，改为服务端重定向可消除加载闪烁。
 - [x] Add custom 404 and error pages
   > 添加自定义 404 页面和通用错误页面，保持与整体设计风格一致。

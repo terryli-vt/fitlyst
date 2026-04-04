@@ -3,7 +3,8 @@
     "allow": [
       "Bash(npm run:*)",
       "Bash(find /c/Coding/fitlyst -type f -name .env* -o -name *.env.example)",
-      "Bash(grep -E \"\\\\.\\(tsx|ts|css\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts|css\\)$\")",
+      "Bash(npx drizzle-kit:*)"
     ]
   }
 }

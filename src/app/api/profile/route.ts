@@ -171,9 +171,31 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const { heightCm: hCm, weightKg: wKg, age: ageNum, gender, activityLevel, goal, goalPriority } = parsed.data;
+  const data = parsed.data;
+  const now = new Date();
 
-  // Build a UserProfile to pass to calculateNutrition (values already in metric)
+  // Preferences-only update (no main profile fields)
+  if (!("heightCm" in data)) {
+    const prefSet: Record<string, string | Date> = { updatedAt: now };
+    if (data.dietaryRestrictions !== undefined)
+      prefSet.dietaryRestrictions = JSON.stringify(data.dietaryRestrictions);
+    if (data.allergies !== undefined)
+      prefSet.allergies = JSON.stringify(data.allergies);
+    if (data.cuisinePreferences !== undefined)
+      prefSet.cuisinePreferences = JSON.stringify(data.cuisinePreferences);
+
+    await db
+      .update(userProfiles)
+      .set(prefSet)
+      .where(eq(userProfiles.userId, userId));
+
+    return NextResponse.json({ success: true });
+  }
+
+  // Full profile update
+  const { heightCm: hCm, weightKg: wKg, age: ageNum, gender, activityLevel, goal, goalPriority,
+          dietaryRestrictions, allergies, cuisinePreferences } = data;
+
   const fakeProfile: UserProfile = {
     height: { value: String(hCm), unit: "cm" },
     weight: { value: String(wKg), unit: "kg" },
@@ -185,7 +207,6 @@ export async function PATCH(request: NextRequest) {
   };
 
   const nutrition = calculateNutrition(fakeProfile);
-  const now = new Date();
 
   await db
     .insert(userProfiles)
@@ -199,6 +220,9 @@ export async function PATCH(request: NextRequest) {
       activityLevel,
       goal,
       goalPriority,
+      dietaryRestrictions: dietaryRestrictions ? JSON.stringify(dietaryRestrictions) : null,
+      allergies: allergies ? JSON.stringify(allergies) : null,
+      cuisinePreferences: cuisinePreferences ? JSON.stringify(cuisinePreferences) : null,
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -211,6 +235,9 @@ export async function PATCH(request: NextRequest) {
         activityLevel,
         goal,
         goalPriority,
+        dietaryRestrictions: dietaryRestrictions ? JSON.stringify(dietaryRestrictions) : null,
+        allergies: allergies ? JSON.stringify(allergies) : null,
+        cuisinePreferences: cuisinePreferences ? JSON.stringify(cuisinePreferences) : null,
         updatedAt: now,
       },
     });

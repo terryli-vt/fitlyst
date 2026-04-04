@@ -4,8 +4,18 @@ import { auth } from "@/auth";
 import { db } from "@/db";
 import { userProfiles, nutritionResults, mealIdeas } from "@/db/schema";
 import ProfileContent from "@/features/profile/components/ProfileContent";
-import type { MealIdea } from "@/features/onboarding/types";
+import type { MealIdea, DietaryPreferences } from "@/features/onboarding/types";
 import { getRemainingGenerations } from "@/lib/mealGenerationLimit";
+
+function parseJsonArray(value: string | null | undefined): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -32,6 +42,12 @@ export default async function ProfilePage() {
 
   const remainingGenerations = getRemainingGenerations(mealRecord);
 
+  const initialPreferences: DietaryPreferences = {
+    dietaryRestrictions: parseJsonArray(profile?.dietaryRestrictions),
+    allergies: parseJsonArray(profile?.allergies),
+    cuisinePreferences: parseJsonArray(profile?.cuisinePreferences),
+  };
+
   return (
     <ProfileContent
       user={{ name: name ?? null, email: email ?? null, image: image ?? null }}
@@ -45,6 +61,9 @@ export default async function ProfilePage() {
               activityLevel: profile.activityLevel,
               goal: profile.goal,
               goalPriority: profile.goalPriority,
+              dietaryRestrictions: initialPreferences.dietaryRestrictions,
+              allergies: initialPreferences.allergies,
+              cuisinePreferences: initialPreferences.cuisinePreferences,
             }
           : null
       }
@@ -62,6 +81,7 @@ export default async function ProfilePage() {
       }
       initialMeals={meals}
       initialRemainingGenerations={remainingGenerations}
+      initialPreferences={initialPreferences}
     />
   );
 }

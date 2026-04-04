@@ -4,6 +4,14 @@ import MealCard from "@/components/MealCard";
 import Navbar from "@/components/Navbar";
 import type { MealIdea } from "../types";
 
+const MEAL_ORDER: MealIdea["mealType"][] = ["breakfast", "lunch", "dinner", "snack"];
+
+function sortMeals(meals: MealIdea[]): MealIdea[] {
+  return [...meals].sort(
+    (a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType),
+  );
+}
+
 interface MealIdeasViewProps {
   mealIdeas: MealIdea[];
   onBack?: () => void;
@@ -36,7 +44,7 @@ export function MealIdeasView({ mealIdeas, onBack }: MealIdeasViewProps) {
       <main className="flex-1 px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-5">
-            {mealIdeas.map((meal, index) => (
+            {sortMeals(mealIdeas).map((meal, index) => (
               <MealCard key={index} meal={meal} />
             ))}
           </div>

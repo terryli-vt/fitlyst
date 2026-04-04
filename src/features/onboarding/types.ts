@@ -41,11 +41,20 @@ export interface NutritionResults {
 }
 
 /**
+ * Dietary Preferences Type
+ */
+export interface DietaryPreferences {
+  dietaryRestrictions: string[];
+  allergies: string[];
+  cuisinePreferences: string[];
+}
+
+/**
  * Meal Idea Type
  * Represents a single meal suggestion with its macros and cooking instructions
  */
 export interface MealIdea {
-  mealType: "breakfast" | "lunch" | "dinner";
+  mealType: "breakfast" | "lunch" | "dinner" | "snack";
   name: string;
   description: string;
   macros: {

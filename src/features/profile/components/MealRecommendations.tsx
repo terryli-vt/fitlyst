@@ -3,14 +3,23 @@
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { getErrorMessage } from "@/lib/error";
-import type { MealIdea } from "@/features/onboarding/types";
+import type { MealIdea, DietaryPreferences } from "@/features/onboarding/types";
 import MealCard from "@/components/MealCard";
 import type { DBNutrition } from "../types";
+
+const MEAL_ORDER: MealIdea["mealType"][] = ["breakfast", "lunch", "dinner", "snack"];
+
+function sortMeals(meals: MealIdea[]): MealIdea[] {
+  return [...meals].sort(
+    (a, b) => MEAL_ORDER.indexOf(a.mealType) - MEAL_ORDER.indexOf(b.mealType),
+  );
+}
 
 interface MealRecommendationsProps {
   initialMeals: MealIdea[] | null;
   nutrition: DBNutrition;
   initialRemainingGenerations: number;
+  preferences: DietaryPreferences;
   onGeneratingChange?: (isGenerating: boolean) => void;
 }
 
@@ -18,19 +27,18 @@ export default function MealRecommendations({
   initialMeals,
   nutrition,
   initialRemainingGenerations,
+  preferences,
   onGeneratingChange,
 }: MealRecommendationsProps) {
   const [meals, setMeals] = useState<MealIdea[] | null>(initialMeals);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [remainingGenerations, setRemainingGenerations] = useState(initialRemainingGenerations);
 
   const setGenerating = (value: boolean) => {
     setIsGenerating(value);
     onGeneratingChange?.(value);
   };
-  const [error, setError] = useState<string | null>(null);
-  const [remainingGenerations, setRemainingGenerations] = useState(
-    initialRemainingGenerations,
-  );
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -40,7 +48,7 @@ export default function MealRecommendations({
       const genResponse = await fetch("/api/generate-meal-ideas", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nutrition }),
+        body: JSON.stringify({ nutrition, preferences }),
       });
 
       if (!genResponse.ok) {
@@ -124,7 +132,7 @@ export default function MealRecommendations({
       {!isGenerating && meals && meals.length > 0 && (
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 items-start">
-            {meals.map((meal, index) => (
+            {sortMeals(meals).map((meal, index) => (
               <MealCard key={index} meal={meal} />
             ))}
           </div>
